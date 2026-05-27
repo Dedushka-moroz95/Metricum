@@ -39,6 +39,7 @@
             .map(function (item) {
               return {
                 label: row.label + " · " + item.label,
+                unitLabel: row.label,
                 delta: item.delta,
                 impact: item.impact,
                 comparisonLabel: item.label,
@@ -52,6 +53,7 @@
 
         return [{
           label: row.label,
+          unitLabel: row.label,
           delta: result.delta,
           impact: result.impact,
           comparisonLabel: lastPeriod.label + " - " + firstPeriod.label,
@@ -137,9 +139,12 @@
               weight: "800",
             },
             callbacks: {
+              title: function (items) {
+                const row = items[0] ? rows[items[0].dataIndex] : null;
+                return row ? row.unitLabel : "";
+              },
               label: function (context) {
-                const row = rows[context.dataIndex];
-                return " " + (row ? row.comparisonLabel : "") + ": " + Normalizers.formatNumber(context.parsed.x, 2);
+                return "Изменение: " + Normalizers.formatNumber(context.parsed.x, 2);
               },
             },
           },

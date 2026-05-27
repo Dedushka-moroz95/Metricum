@@ -115,11 +115,22 @@
   }
 
   function handlePeriodClick(event) {
-    if (event.target.dataset.action !== "remove-period") {
+    const actionButton = event.target.closest("[data-action]");
+
+    if (!actionButton) {
       return;
     }
 
-    const periodId = event.target.dataset.periodId;
+    const periodId = actionButton.dataset.periodId;
+
+    if (actionButton.dataset.action === "clear-period-file") {
+      clearPeriodFile(periodId);
+      return;
+    }
+
+    if (actionButton.dataset.action !== "remove-period") {
+      return;
+    }
 
     if (state.periods.length <= 2) {
       return;
@@ -131,6 +142,27 @@
 
     state.mapping.metrics.forEach(function (metric) {
       delete metric.columns[periodId];
+    });
+
+    clearAnalysis();
+    renderAll();
+  }
+
+  function clearPeriodFile(periodId) {
+    const period = findPeriod(periodId);
+
+    if (!period) {
+      return;
+    }
+
+    period.file = null;
+    period.table = null;
+    period.idColumn = "";
+    period.loading = false;
+    state.messages = [];
+
+    state.mapping.metrics.forEach(function (metric) {
+      metric.columns[periodId] = "";
     });
 
     clearAnalysis();
@@ -209,6 +241,7 @@
           period.id +
           '" title="Удалить период">×</button>'
         : "";
+    const clearFileDisabled = period.loading || (!period.file && !period.table) ? " disabled" : "";
 
     return (
       '<div class="period-card" data-period-id="' +
@@ -237,6 +270,13 @@
       App.UI.escapeHtml(fileName) +
       "</strong>" +
       "</label>" +
+      '<div class="period-file-actions">' +
+      '<button class="button button-secondary file-clear-button" type="button" data-action="clear-period-file" data-period-id="' +
+      period.id +
+      '"' +
+      clearFileDisabled +
+      ">Удалить файл</button>" +
+      "</div>" +
       "</div>"
     );
   }

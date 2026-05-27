@@ -247,7 +247,7 @@
     }
 
     if (!showTimeline) {
-      return "<th>" + escapeHtml(metric.label + " (" + periods[periods.length - 1].label + " - " + periods[0].label + ")") + "</th>";
+      return "<th>" + escapeHtml(metric.label) + "</th>";
     }
 
     const periodHeaders = periods
