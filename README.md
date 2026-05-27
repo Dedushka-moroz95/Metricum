@@ -69,6 +69,7 @@ Frontend:
 
 АРХИТЕКТУРА ПРОЕКТА
 
+```plaintext
 src/
 │
 ├── analytics.js
@@ -79,6 +80,7 @@ src/
 ├── exporters.js
 ├── normalizers.js
 └── ui.js
+```
 
 --------------------------------------------------
 
