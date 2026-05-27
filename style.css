@@ -289,18 +289,13 @@ input[type="file"] {
   border-radius: var(--radius-lg);
   background: var(--card-soft);
   transition:
-    transform 220ms var(--ease-premium),
     border-color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
+    background-color 220ms ease;
 }
 
 .period-card:hover {
-  --hover-y: -2px;
-  transform: translateY(-2px);
   border-color: #d1d5db;
   background: #fff;
-  box-shadow: 0 14px 32px rgba(31, 31, 36, 0.05);
 }
 
 .period-card__top {
@@ -369,8 +364,10 @@ input[type="file"] {
 }
 
 .file-drop:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-soft);
+  border-color: rgba(255, 221, 45, 0.88);
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(135deg, rgba(255, 221, 45, 0.88), rgba(229, 231, 235, 0.95)) border-box;
 }
 
 .file-drop input {
@@ -1246,12 +1243,6 @@ input:disabled {
 }
 
 .motion-ready .reveal-item.is-visible:hover {
-  transition-delay: 0ms;
-}
-
-.motion-ready .period-card.reveal-item {
-  --motion-y: 8px;
-  transition-duration: 240ms, 240ms, 180ms, 180ms, 180ms;
   transition-delay: 0ms;
 }
 

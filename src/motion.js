@@ -5,7 +5,6 @@
     ".workspace-section",
     ".section-title",
     ".period-toolbar",
-    ".period-card",
     ".preview-panel",
     ".mapper-controls > .field",
     ".metric-toolbar",
@@ -49,7 +48,7 @@
 
     elements.forEach(function (element, index) {
       element.classList.add("reveal-item");
-      element.style.setProperty("--motion-order", getMotionOrder(element, index));
+      element.style.setProperty("--motion-order", String(Math.min(index % 8, 7)));
 
       if (prefersReducedMotion() || !revealObserver) {
         revealNow(element);
@@ -149,14 +148,6 @@
     const viewportHeight = global.innerHeight || document.documentElement.clientHeight;
 
     return rect.top < viewportHeight * 0.94 && rect.bottom > viewportHeight * 0.02;
-  }
-
-  function getMotionOrder(element, index) {
-    if (element.classList.contains("period-card")) {
-      return "0";
-    }
-
-    return String(Math.min(index % 8, 7));
   }
 
   App.Motion = {
