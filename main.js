@@ -3,12 +3,15 @@
   const state = App.state;
 
   const dom = {};
+  let historyRecords = [];
+  let hasUnsavedAnalysis = false;
 
   document.addEventListener("DOMContentLoaded", init);
 
   function init() {
     cacheDom();
     checkDependencies();
+    historyRecords = App.HistoryStore ? App.HistoryStore.load() : [];
     bindEvents();
     initMotion();
     renderAll();
@@ -26,12 +29,20 @@
     dom.analyzeButton = document.getElementById("analyzeButton");
     dom.exportCsvButton = document.getElementById("exportCsvButton");
     dom.exportExcelButton = document.getElementById("exportExcelButton");
+    dom.saveAnalysisButton = document.getElementById("saveAnalysisButton");
     dom.warningsPanel = document.getElementById("warningsPanel");
+    dom.clearHistoryButton = document.getElementById("clearHistoryButton");
+    dom.historyList = document.getElementById("historyList");
     dom.summaryCards = document.getElementById("summaryCards");
     dom.chartMetricSelect = document.getElementById("chartMetricSelect");
     dom.deltaChart = document.getElementById("deltaChart");
     dom.moversPanel = document.getElementById("moversPanel");
     dom.resultsTable = document.getElementById("resultsTable");
+    dom.saveAnalysisModal = document.getElementById("saveAnalysisModal");
+    dom.saveAnalysisForm = document.getElementById("saveAnalysisForm");
+    dom.saveAnalysisNameInput = document.getElementById("saveAnalysisNameInput");
+    dom.saveAnalysisCancelButton = document.getElementById("saveAnalysisCancelButton");
+    dom.saveAnalysisCloseButton = document.getElementById("saveAnalysisCloseButton");
   }
 
   function checkDependencies() {
@@ -76,6 +87,23 @@
     dom.analyzeButton.addEventListener("click", analyze);
     dom.exportCsvButton.addEventListener("click", exportCsv);
     dom.exportExcelButton.addEventListener("click", exportExcel);
+    dom.saveAnalysisButton.addEventListener("click", openSaveAnalysisModal);
+    dom.clearHistoryButton.addEventListener("click", clearHistory);
+    dom.historyList.addEventListener("click", handleHistoryClick);
+    dom.saveAnalysisForm.addEventListener("submit", saveAnalysisFromModal);
+    dom.saveAnalysisCancelButton.addEventListener("click", closeSaveAnalysisModal);
+    dom.saveAnalysisCloseButton.addEventListener("click", closeSaveAnalysisModal);
+    dom.saveAnalysisModal.addEventListener("click", function (event) {
+      if (event.target === dom.saveAnalysisModal) {
+        closeSaveAnalysisModal();
+      }
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !dom.saveAnalysisModal.hidden) {
+        closeSaveAnalysisModal();
+      }
+    });
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     dom.chartMetricSelect.addEventListener("change", function () {
       state.selectedChartMetricId = dom.chartMetricSelect.value;
@@ -212,6 +240,9 @@
     state.comparison = null;
     state.analytics = null;
     state.selectedChartMetricId = "";
+    state.restoredHistoryMeta = null;
+    state.restoredHistorySettings = null;
+    hasUnsavedAnalysis = false;
   }
 
   function renderAll() {
@@ -221,6 +252,7 @@
     renderColumnMapping();
     renderMetrics();
     renderAnalysis();
+    renderHistoryPanel();
     renderWarningsPanel();
     refreshMotion();
   }
@@ -338,7 +370,9 @@
   }
 
   function renderMetrics() {
-    syncMetricLabels();
+    if (areAllPeriodsLoaded()) {
+      syncMetricLabels();
+    }
 
     if (!areAllPeriodsLoaded()) {
       dom.metricList.className = "metric-list empty-state";
@@ -547,6 +581,9 @@
 
     state.analytics = App.Analytics.buildAnalytics(state.comparison, state.mapping.metrics);
     state.selectedChartMetricId = state.mapping.metrics[0].id;
+    state.restoredHistoryMeta = null;
+    state.restoredHistorySettings = null;
+    hasUnsavedAnalysis = true;
     renderAll();
   }
 
@@ -561,7 +598,254 @@
     const hasComparison = Boolean(state.comparison);
     dom.exportCsvButton.disabled = !hasComparison;
     dom.exportExcelButton.disabled = !hasComparison;
+    dom.saveAnalysisButton.disabled = !hasComparison;
     refreshMotion();
+  }
+
+  function renderHistoryPanel() {
+    App.UI.renderHistory(dom.historyList, historyRecords);
+    dom.clearHistoryButton.disabled = !historyRecords.length;
+  }
+
+  function openSaveAnalysisModal() {
+    if (!state.comparison || !App.HistoryStore) {
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+    dom.saveAnalysisNameInput.value = App.HistoryStore.defaultTitle(createdAt);
+    dom.saveAnalysisNameInput.dataset.createdAt = createdAt;
+    dom.saveAnalysisModal.hidden = false;
+    dom.saveAnalysisNameInput.focus();
+    dom.saveAnalysisNameInput.select();
+  }
+
+  function closeSaveAnalysisModal() {
+    dom.saveAnalysisModal.hidden = true;
+    dom.saveAnalysisNameInput.value = "";
+    dom.saveAnalysisNameInput.dataset.createdAt = "";
+  }
+
+  function saveAnalysisFromModal(event) {
+    event.preventDefault();
+
+    if (!state.comparison || !App.HistoryStore) {
+      closeSaveAnalysisModal();
+      return;
+    }
+
+    const createdAt = dom.saveAnalysisNameInput.dataset.createdAt || new Date().toISOString();
+    const title = dom.saveAnalysisNameInput.value.trim() || App.HistoryStore.defaultTitle(createdAt);
+    const result = App.HistoryStore.save(buildHistoryRecord(title, createdAt));
+
+    historyRecords = result.records;
+    renderHistoryPanel();
+    refreshMotion();
+
+    if (!result.ok) {
+      state.messages.push({
+        type: "error",
+        message: "Не удалось сохранить анализ. Возможно, локальное хранилище переполнено.",
+      });
+      renderWarningsPanel();
+      return;
+    }
+
+    closeSaveAnalysisModal();
+    hasUnsavedAnalysis = false;
+  }
+
+  function buildHistoryRecord(title, createdAt) {
+    const metrics = cloneJson(state.mapping.metrics);
+    const comparison = cloneJson(state.comparison);
+    const analytics = cloneJson(state.analytics);
+    const idColumns = getIdColumnMetadata();
+    const restoredMeta = state.restoredHistoryMeta || {};
+    const restoredSettings = state.restoredHistorySettings || {};
+    const identifierLabel = getIdentifierLabel(idColumns) || restoredMeta.identifierLabel || "";
+
+    return {
+      createdAt: createdAt,
+      title: title,
+      pinned: false,
+      meta: {
+        comparisonMode: state.comparisonMode,
+        periodCount: comparison && comparison.periods ? comparison.periods.length : state.periods.length,
+        metricCount: metrics.length,
+        totalUnits: analytics ? analytics.totalUnits : 0,
+        totalCompared: analytics ? analytics.totalCompared : 0,
+        identifierLabel: identifierLabel,
+      },
+      metrics: metrics,
+      settings: {
+        comparisonMode: state.comparisonMode,
+        selectedChartMetricId: state.selectedChartMetricId,
+        idColumns: idColumns.length ? idColumns : restoredSettings.idColumns || [],
+      },
+      comparison: comparison,
+      analytics: analytics,
+    };
+  }
+
+  function getIdColumnMetadata() {
+    return state.periods.map(function (period) {
+      return {
+        periodId: period.id,
+        periodLabel: period.label,
+        columnId: period.idColumn || "",
+        columnName: getColumnName(period, period.idColumn) || "",
+      };
+    }).filter(function (item) {
+      return item.columnId || item.columnName;
+    });
+  }
+
+  function getIdentifierLabel(idColumns) {
+    const names = idColumns
+      .map(function (item) {
+        return item.columnName || item.columnId;
+      })
+      .filter(Boolean);
+    const uniqueNames = Array.from(new Set(names));
+
+    return uniqueNames.join(", ");
+  }
+
+  function handleHistoryClick(event) {
+    const actionButton = event.target.closest("[data-action]");
+
+    if (!actionButton) {
+      return;
+    }
+
+    const id = actionButton.dataset.historyId;
+
+    if (actionButton.dataset.action === "open-history") {
+      openHistoryRecord(id);
+      return;
+    }
+
+    if (actionButton.dataset.action === "toggle-history-pin") {
+      toggleHistoryPin(id);
+      return;
+    }
+
+    if (actionButton.dataset.action === "delete-history") {
+      deleteHistoryRecord(id);
+    }
+  }
+
+  function openHistoryRecord(id) {
+    const record = historyRecords.find(function (item) {
+      return item.id === id;
+    });
+
+    if (!record || !record.comparison || !record.analytics) {
+      return;
+    }
+
+    state.messages = [];
+    state.comparisonMode = record.settings.comparisonMode || record.meta.comparisonMode || record.comparison.comparisonMode || "endpoint";
+    state.comparison = cloneJson(record.comparison);
+    state.analytics = cloneJson(record.analytics);
+    state.mapping.metrics = cloneJson(record.metrics || []);
+    state.selectedChartMetricId =
+      record.settings.selectedChartMetricId ||
+      (state.mapping.metrics[0] ? state.mapping.metrics[0].id : "");
+    state.periods = restorePeriods(record);
+    state.restoredHistoryMeta = cloneJson(record.meta || {});
+    state.restoredHistorySettings = cloneJson(record.settings || {});
+    hasUnsavedAnalysis = false;
+    renderAll();
+  }
+
+  function restorePeriods(record) {
+    const periods = record.comparison && Array.isArray(record.comparison.periods) ? record.comparison.periods : [];
+
+    if (periods.length >= 2) {
+      return periods.map(function (period) {
+        return {
+          id: period.id,
+          label: period.label,
+          file: null,
+          table: null,
+          idColumn: getRestoredIdColumn(record, period.id),
+        };
+      });
+    }
+
+    return [App.createPeriod(0), App.createPeriod(1)];
+  }
+
+  function getRestoredIdColumn(record, periodId) {
+    const idColumns = record.settings && Array.isArray(record.settings.idColumns) ? record.settings.idColumns : [];
+    const item = idColumns.find(function (column) {
+      return column.periodId === periodId;
+    });
+
+    return item ? item.columnId : "";
+  }
+
+  function toggleHistoryPin(id) {
+    if (!App.HistoryStore) {
+      return;
+    }
+
+    const result = App.HistoryStore.togglePinned(id);
+    historyRecords = result.records;
+    renderHistoryPanel();
+    refreshMotion();
+  }
+
+  function deleteHistoryRecord(id) {
+    if (!App.HistoryStore || !window.confirm("Удалить сохраненный анализ?")) {
+      return;
+    }
+
+    const result = App.HistoryStore.remove(id);
+    historyRecords = result.records;
+    renderHistoryPanel();
+    refreshMotion();
+  }
+
+  function clearHistory() {
+    if (!historyRecords.length || !App.HistoryStore) {
+      return;
+    }
+
+    if (!window.confirm("Вы действительно хотите удалить всю историю анализов?")) {
+      return;
+    }
+
+    const result = App.HistoryStore.clear();
+    historyRecords = result.records;
+    renderHistoryPanel();
+    refreshMotion();
+  }
+
+  function cloneJson(value) {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function handleBeforeUnload(event) {
+    if (!hasUnsavedAnalysis || !state.comparison) {
+      return;
+    }
+
+    event.preventDefault();
+    event.returnValue = "";
+
+    window.setTimeout(function () {
+      if (hasUnsavedAnalysis && state.comparison && dom.saveAnalysisModal.hidden) {
+        openSaveAnalysisModal();
+      }
+    }, 0);
+
+    return "";
   }
 
   function initMotion() {

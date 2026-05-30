@@ -10,6 +10,7 @@
     ".data-quality-inline",
     ".empty-state",
     ".warning-item",
+    ".history-card",
     ".summary-card",
     ".chart-panel",
     ".mover-card",

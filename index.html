@@ -9,6 +9,7 @@
     <script src="./vendor/chart.umd.min.js" defer></script>
     <script src="./vendor/exceljs.min.js" defer></script>
     <script src="./src/appState.js" defer></script>
+    <script src="./src/historyStore.js" defer></script>
     <script src="./src/normalizers.js" defer></script>
     <script src="./src/excelReader.js" defer></script>
     <script src="./src/comparator.js" defer></script>
@@ -109,6 +110,9 @@
             <button id="exportExcelButton" class="button button-secondary" type="button" disabled>
               Excel
             </button>
+            <button id="saveAnalysisButton" class="button button-secondary" type="button" disabled>
+              Сохранить анализ
+            </button>
           </div>
           <div id="warningsPanel" class="data-quality-inline" data-variant="inline-quality">
             Проверок пока нет
@@ -116,10 +120,32 @@
         </div>
       </section>
 
-      <section class="workspace-section dashboard-layout" aria-labelledby="dashboardTitle">
+      <section class="workspace-section history-layout" aria-labelledby="historyTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">04</span>
+            <div>
+              <h2 id="historyTitle">История анализов</h2>
+            </div>
+          </div>
+          <span class="section-subtitle">Сохраненные результаты можно открыть без повторной загрузки файлов</span>
+        </div>
+
+        <div class="history-toolbar">
+          <button id="clearHistoryButton" class="button button-secondary" type="button" disabled>
+            Очистить историю
+          </button>
+        </div>
+
+        <div id="historyList" class="history-list empty-state">
+          Сохраненные анализы появятся здесь после расчета и сохранения результата.
+        </div>
+      </section>
+
+      <section class="workspace-section dashboard-layout" aria-labelledby="dashboardTitle">
+        <div class="section-title section-title--wide">
+          <div class="step-heading">
+            <span class="step-index">05</span>
             <div>
               <h2 id="dashboardTitle">Dashboard</h2>
             </div>
@@ -139,7 +165,7 @@
       <section class="workspace-section" aria-labelledby="resultsTitle">
         <div class="section-title">
           <div class="step-heading">
-            <span class="step-index">05</span>
+            <span class="step-index">06</span>
             <div>
               <h2 id="resultsTitle">Таблица результатов</h2>
             </div>
@@ -148,5 +174,27 @@
         <div id="resultsTable" class="results-panel empty-state">Нет рассчитанных данных</div>
       </section>
     </main>
+
+    <div id="saveAnalysisModal" class="modal-backdrop" hidden>
+      <form id="saveAnalysisForm" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="saveAnalysisTitle">
+        <div class="modal-header">
+          <div>
+            <h2 id="saveAnalysisTitle">Сохранить анализ</h2>
+            <p>Название поможет быстрее найти результат в истории.</p>
+          </div>
+          <button id="saveAnalysisCloseButton" class="modal-close" type="button" aria-label="Закрыть">×</button>
+        </div>
+
+        <label class="field">
+          <span>Название анализа</span>
+          <input id="saveAnalysisNameInput" type="text" autocomplete="off" />
+        </label>
+
+        <div class="modal-actions">
+          <button id="saveAnalysisCancelButton" class="button button-secondary" type="button">Отмена</button>
+          <button class="button button-primary" type="submit">Сохранить</button>
+        </div>
+      </form>
+    </div>
   </body>
 </html>

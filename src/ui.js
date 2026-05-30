@@ -449,6 +449,99 @@
     select.value = selectedValue || (metrics[0] ? metrics[0].id : "");
   }
 
+  function renderHistory(container, records) {
+    if (!records.length) {
+      container.className = "history-list empty-state";
+      container.textContent = "Сохраненные анализы появятся здесь после расчета и сохранения результата.";
+      return;
+    }
+
+    container.className = "history-list";
+    container.innerHTML = records.map(renderHistoryCard).join("");
+  }
+
+  function renderHistoryCard(record) {
+    const meta = record.meta || {};
+    const metricCount = Number(meta.metricCount) || (Array.isArray(record.metrics) ? record.metrics.length : 0);
+    const periodCount = Number(meta.periodCount) || (record.comparison && record.comparison.periods ? record.comparison.periods.length : 0);
+    const totalUnits = Number(meta.totalUnits) || (record.analytics ? record.analytics.totalUnits : 0) || 0;
+    const totalCompared = Number(meta.totalCompared) || (record.analytics ? record.analytics.totalCompared : 0) || 0;
+    const modeLabel = meta.comparisonMode === "sequential" ? "последовательный" : "итоговый";
+    const pinnedLabel = record.pinned ? '<span class="history-pin">Закреплено</span>' : "";
+    const pinnedClass = record.pinned ? " history-card--pinned" : "";
+    const pinAction = record.pinned ? "Открепить" : "Закрепить";
+    const identifierLabel = meta.identifierLabel ? '<span>Юнит: ' + escapeHtml(meta.identifierLabel) + "</span>" : "";
+
+    return (
+      '<article class="history-card' +
+      pinnedClass +
+      '" data-history-id="' +
+      escapeHtml(record.id) +
+      '">' +
+      '<div class="history-card__body">' +
+      '<div class="history-card__title-row">' +
+      "<h3>" +
+      escapeHtml(record.title) +
+      "</h3>" +
+      pinnedLabel +
+      "</div>" +
+      '<div class="history-date">' +
+      escapeHtml(formatHistoryDate(record.createdAt)) +
+      "</div>" +
+      '<div class="history-meta">' +
+      "<span>" +
+      periodCount +
+      " периодов</span>" +
+      "<span>" +
+      metricCount +
+      " показателей</span>" +
+      "<span>" +
+      totalUnits +
+      " юнитов</span>" +
+      "<span>" +
+      totalCompared +
+      " полных строк</span>" +
+      "<span>Режим: " +
+      escapeHtml(modeLabel) +
+      "</span>" +
+      identifierLabel +
+      "</div></div>" +
+      '<div class="history-actions">' +
+      '<button class="button button-primary" type="button" data-action="open-history" data-history-id="' +
+      escapeHtml(record.id) +
+      '">Открыть</button>' +
+      '<button class="button button-secondary" type="button" data-action="toggle-history-pin" data-history-id="' +
+      escapeHtml(record.id) +
+      '">' +
+      pinAction +
+      "</button>" +
+      '<button class="button button-secondary history-delete-button" type="button" data-action="delete-history" data-history-id="' +
+      escapeHtml(record.id) +
+      '">Удалить</button>' +
+      "</div></article>"
+    );
+  }
+
+  function formatHistoryDate(value) {
+    if (App.HistoryStore && typeof App.HistoryStore.formatDateTime === "function") {
+      return App.HistoryStore.formatDateTime(value);
+    }
+
+    const date = value ? new Date(value) : new Date();
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    return new Intl.DateTimeFormat("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  }
+
   App.UI = {
     escapeHtml,
     renderPreview,
@@ -458,6 +551,7 @@
     renderMovers,
     renderResultsTable,
     renderChartMetricSelect,
+    renderHistory,
     impactPill,
     impactLabel,
     translateImpact: Exporters.translateImpact,

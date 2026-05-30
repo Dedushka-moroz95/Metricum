@@ -791,6 +791,140 @@ input:disabled {
   gap: 12px;
 }
 
+.history-layout {
+  grid-template-columns: 1fr;
+}
+
+.history-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.history-list {
+  display: grid;
+  gap: 14px;
+}
+
+.history-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card-soft);
+  transition:
+    transform 220ms var(--ease-premium),
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.history-card:hover {
+  --hover-y: -2px;
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(24, 33, 47, 0.05);
+}
+
+.history-card--pinned {
+  border-color: rgba(15, 118, 110, 0.26);
+  background:
+    linear-gradient(135deg, rgba(204, 251, 241, 0.62), rgba(248, 250, 252, 0.94));
+}
+
+.history-card__body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.history-card__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.history-card h3 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 950;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-pin {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.history-date {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.history-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.history-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.history-actions .button {
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+.history-delete-button {
+  border-color: #ffe4e6;
+  background: #fff1f2;
+  color: var(--danger);
+}
+
+.history-delete-button:hover:not(:disabled) {
+  background: #ffe4e6;
+}
+
 .warnings-panel {
   display: grid;
   gap: 12px;
@@ -1228,6 +1362,81 @@ input:disabled {
   font-weight: 800;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(24, 33, 47, 0.34);
+  backdrop-filter: blur(12px);
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.modal-card {
+  display: grid;
+  gap: 22px;
+  width: min(100%, 520px);
+  padding: 24px;
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 70px rgba(24, 33, 47, 0.16);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.modal-header p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.modal-close {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card-soft);
+  color: var(--text-secondary);
+  font-size: 22px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  background: #fff;
+  color: var(--text);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .motion-ready .reveal-item {
   --motion-y: 18px;
   --hover-y: 0px;
@@ -1403,6 +1612,22 @@ input:disabled {
 
   .action-row {
     grid-template-columns: 1fr;
+  }
+
+  .history-card {
+    grid-template-columns: 1fr;
+  }
+
+  .history-actions,
+  .history-toolbar,
+  .modal-actions {
+    justify-content: stretch;
+  }
+
+  .history-actions .button,
+  .modal-actions .button,
+  .history-toolbar .button {
+    flex: 1 1 120px;
   }
 
   .action-buttons {
