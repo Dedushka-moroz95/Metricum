@@ -5,6 +5,7 @@
   const dom = {};
   let historyRecords = [];
   let hasUnsavedAnalysis = false;
+  let historySearchQuery = "";
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -33,6 +34,8 @@
     dom.warningsPanel = document.getElementById("warningsPanel");
     dom.clearHistoryButton = document.getElementById("clearHistoryButton");
     dom.historyList = document.getElementById("historyList");
+    dom.historyTitle = document.getElementById("historyTitle");
+    dom.historySearchInput = document.getElementById("historySearchInput");
     dom.summaryCards = document.getElementById("summaryCards");
     dom.chartMetricSelect = document.getElementById("chartMetricSelect");
     dom.deltaChart = document.getElementById("deltaChart");
@@ -40,9 +43,12 @@
     dom.resultsTable = document.getElementById("resultsTable");
     dom.saveAnalysisModal = document.getElementById("saveAnalysisModal");
     dom.saveAnalysisForm = document.getElementById("saveAnalysisForm");
+    dom.saveAnalysisTitle = document.getElementById("saveAnalysisTitle");
+    dom.saveAnalysisDescription = document.getElementById("saveAnalysisDescription");
     dom.saveAnalysisNameInput = document.getElementById("saveAnalysisNameInput");
     dom.saveAnalysisCancelButton = document.getElementById("saveAnalysisCancelButton");
     dom.saveAnalysisCloseButton = document.getElementById("saveAnalysisCloseButton");
+    dom.saveAnalysisSubmitButton = document.getElementById("saveAnalysisSubmitButton");
   }
 
   function checkDependencies() {
@@ -90,6 +96,11 @@
     dom.saveAnalysisButton.addEventListener("click", openSaveAnalysisModal);
     dom.clearHistoryButton.addEventListener("click", clearHistory);
     dom.historyList.addEventListener("click", handleHistoryClick);
+    dom.historySearchInput.addEventListener("input", function () {
+      historySearchQuery = dom.historySearchInput.value.trim().toLowerCase();
+      renderHistoryPanel();
+      refreshMotion();
+    });
     dom.saveAnalysisForm.addEventListener("submit", saveAnalysisFromModal);
     dom.saveAnalysisCancelButton.addEventListener("click", closeSaveAnalysisModal);
     dom.saveAnalysisCloseButton.addEventListener("click", closeSaveAnalysisModal);
@@ -603,8 +614,24 @@
   }
 
   function renderHistoryPanel() {
-    App.UI.renderHistory(dom.historyList, historyRecords);
+    const filteredRecords = filterHistoryRecords(historyRecords, historySearchQuery);
+    dom.historyTitle.textContent = "История анализов (" + historyRecords.length + ")";
+    dom.historySearchInput.disabled = !historyRecords.length;
+    App.UI.renderHistory(dom.historyList, filteredRecords, {
+      hasRecords: Boolean(historyRecords.length),
+      query: historySearchQuery,
+    });
     dom.clearHistoryButton.disabled = !historyRecords.length;
+  }
+
+  function filterHistoryRecords(records, query) {
+    if (!query) {
+      return records;
+    }
+
+    return records.filter(function (record) {
+      return String(record.title || "").toLowerCase().includes(query);
+    });
   }
 
   function openSaveAnalysisModal() {
@@ -613,6 +640,11 @@
     }
 
     const createdAt = new Date().toISOString();
+    dom.saveAnalysisForm.dataset.mode = "save";
+    dom.saveAnalysisForm.dataset.historyId = "";
+    dom.saveAnalysisTitle.textContent = "Сохранить анализ";
+    dom.saveAnalysisDescription.textContent = "Название поможет быстрее найти результат в истории.";
+    dom.saveAnalysisSubmitButton.textContent = "Сохранить";
     dom.saveAnalysisNameInput.value = App.HistoryStore.defaultTitle(createdAt);
     dom.saveAnalysisNameInput.dataset.createdAt = createdAt;
     dom.saveAnalysisModal.hidden = false;
@@ -622,12 +654,19 @@
 
   function closeSaveAnalysisModal() {
     dom.saveAnalysisModal.hidden = true;
+    dom.saveAnalysisForm.dataset.mode = "";
+    dom.saveAnalysisForm.dataset.historyId = "";
     dom.saveAnalysisNameInput.value = "";
     dom.saveAnalysisNameInput.dataset.createdAt = "";
   }
 
   function saveAnalysisFromModal(event) {
     event.preventDefault();
+
+    if (dom.saveAnalysisForm.dataset.mode === "rename") {
+      renameHistoryFromModal();
+      return;
+    }
 
     if (!state.comparison || !App.HistoryStore) {
       closeSaveAnalysisModal();
@@ -639,6 +678,10 @@
     const result = App.HistoryStore.save(buildHistoryRecord(title, createdAt));
 
     historyRecords = result.records;
+    if (result.ok) {
+      historySearchQuery = "";
+      dom.historySearchInput.value = "";
+    }
     renderHistoryPanel();
     refreshMotion();
 
@@ -674,6 +717,8 @@
         metricCount: metrics.length,
         totalUnits: analytics ? analytics.totalUnits : 0,
         totalCompared: analytics ? analytics.totalCompared : 0,
+        rowCount: comparison && comparison.rows ? comparison.rows.length : 0,
+        changedCount: getChangedCount(analytics),
         identifierLabel: identifierLabel,
       },
       metrics: metrics,
@@ -730,9 +775,66 @@
       return;
     }
 
+    if (actionButton.dataset.action === "rename-history") {
+      openRenameAnalysisModal(id);
+      return;
+    }
+
     if (actionButton.dataset.action === "delete-history") {
       deleteHistoryRecord(id);
     }
+  }
+
+  function openRenameAnalysisModal(id) {
+    const record = historyRecords.find(function (item) {
+      return item.id === id;
+    });
+
+    if (!record || !App.HistoryStore) {
+      return;
+    }
+
+    dom.saveAnalysisForm.dataset.mode = "rename";
+    dom.saveAnalysisForm.dataset.historyId = id;
+    dom.saveAnalysisTitle.textContent = "Переименовать анализ";
+    dom.saveAnalysisDescription.textContent = "Дата создания и результаты останутся без изменений.";
+    dom.saveAnalysisSubmitButton.textContent = "Сохранить";
+    dom.saveAnalysisNameInput.value = record.title;
+    dom.saveAnalysisNameInput.dataset.createdAt = record.createdAt || "";
+    dom.saveAnalysisModal.hidden = false;
+    dom.saveAnalysisNameInput.focus();
+    dom.saveAnalysisNameInput.select();
+  }
+
+  function renameHistoryFromModal() {
+    const id = dom.saveAnalysisForm.dataset.historyId;
+    const record = historyRecords.find(function (item) {
+      return item.id === id;
+    });
+
+    if (!record || !App.HistoryStore) {
+      closeSaveAnalysisModal();
+      return;
+    }
+
+    const fallbackTitle = App.HistoryStore.defaultTitle(record.createdAt);
+    const title = dom.saveAnalysisNameInput.value.trim() || fallbackTitle;
+    const result = App.HistoryStore.save(Object.assign({}, record, { title: title }));
+
+    historyRecords = result.records;
+    renderHistoryPanel();
+    refreshMotion();
+
+    if (!result.ok) {
+      state.messages.push({
+        type: "error",
+        message: "Не удалось переименовать анализ. Возможно, локальное хранилище переполнено.",
+      });
+      renderWarningsPanel();
+      return;
+    }
+
+    closeSaveAnalysisModal();
   }
 
   function openHistoryRecord(id) {
@@ -802,10 +904,12 @@
       return;
     }
 
-    const result = App.HistoryStore.remove(id);
-    historyRecords = result.records;
-    renderHistoryPanel();
-    refreshMotion();
+    animateHistoryRemoval(id, function () {
+      const result = App.HistoryStore.remove(id);
+      historyRecords = result.records;
+      renderHistoryPanel();
+      refreshMotion();
+    });
   }
 
   function clearHistory() {
@@ -829,6 +933,30 @@
     }
 
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function getChangedCount(analytics) {
+    if (!analytics || !Array.isArray(analytics.metricSummaries)) {
+      return 0;
+    }
+
+    return analytics.metricSummaries.reduce(function (sum, summary) {
+      return sum + (Number(summary.improvedCount) || 0) + (Number(summary.declinedCount) || 0);
+    }, 0);
+  }
+
+  function animateHistoryRemoval(id, callback) {
+    const card = Array.from(dom.historyList.querySelectorAll("[data-history-id]")).find(function (item) {
+      return item.dataset.historyId === id;
+    });
+
+    if (!card) {
+      callback();
+      return;
+    }
+
+    card.classList.add("is-removing");
+    window.setTimeout(callback, 190);
   }
 
   function handleBeforeUnload(event) {

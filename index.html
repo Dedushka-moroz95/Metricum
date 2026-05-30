@@ -132,6 +132,10 @@
         </div>
 
         <div class="history-toolbar">
+          <label class="field history-search-field">
+            <span>Поиск</span>
+            <input id="historySearchInput" type="text" placeholder="Название анализа" autocomplete="off" />
+          </label>
           <button id="clearHistoryButton" class="button button-secondary" type="button" disabled>
             Очистить историю
           </button>
@@ -180,7 +184,7 @@
         <div class="modal-header">
           <div>
             <h2 id="saveAnalysisTitle">Сохранить анализ</h2>
-            <p>Название поможет быстрее найти результат в истории.</p>
+            <p id="saveAnalysisDescription">Название поможет быстрее найти результат в истории.</p>
           </div>
           <button id="saveAnalysisCloseButton" class="modal-close" type="button" aria-label="Закрыть">×</button>
         </div>
@@ -192,7 +196,7 @@
 
         <div class="modal-actions">
           <button id="saveAnalysisCancelButton" class="button button-secondary" type="button">Отмена</button>
-          <button class="button button-primary" type="submit">Сохранить</button>
+          <button id="saveAnalysisSubmitButton" class="button button-primary" type="submit">Сохранить</button>
         </div>
       </form>
     </div>

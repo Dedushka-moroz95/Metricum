@@ -449,15 +449,35 @@
     select.value = selectedValue || (metrics[0] ? metrics[0].id : "");
   }
 
-  function renderHistory(container, records) {
+  function renderHistory(container, records, options) {
+    const renderOptions = options || {};
+
     if (!records.length) {
-      container.className = "history-list empty-state";
-      container.textContent = "Сохраненные анализы появятся здесь после расчета и сохранения результата.";
+      container.className = "history-list";
+      container.innerHTML = renderHistoryEmpty(renderOptions);
       return;
     }
 
-    container.className = "history-list";
+    container.className = "history-list" + (renderOptions.query ? " history-list--filtered" : "");
     container.innerHTML = records.map(renderHistoryCard).join("");
+  }
+
+  function renderHistoryEmpty(options) {
+    if (options.hasRecords && options.query) {
+      return (
+        '<div class="history-empty-card">' +
+        "<h3>Ничего не найдено</h3>" +
+        "<p>Попробуйте изменить запрос или очистить поле поиска.</p>" +
+        "</div>"
+      );
+    }
+
+    return (
+      '<div class="history-empty-card">' +
+      "<h3>История пока пуста</h3>" +
+      "<p>Сохраните первый анализ после выполнения сравнения, чтобы быстро возвращаться к результатам без повторной загрузки файлов.</p>" +
+      "</div>"
+    );
   }
 
   function renderHistoryCard(record) {
@@ -466,8 +486,10 @@
     const periodCount = Number(meta.periodCount) || (record.comparison && record.comparison.periods ? record.comparison.periods.length : 0);
     const totalUnits = Number(meta.totalUnits) || (record.analytics ? record.analytics.totalUnits : 0) || 0;
     const totalCompared = Number(meta.totalCompared) || (record.analytics ? record.analytics.totalCompared : 0) || 0;
+    const rowCount = Number(meta.rowCount) || (record.comparison && Array.isArray(record.comparison.rows) ? record.comparison.rows.length : 0);
+    const changedCount = Number(meta.changedCount) || getHistoryChangedCount(record);
     const modeLabel = meta.comparisonMode === "sequential" ? "последовательный" : "итоговый";
-    const pinnedLabel = record.pinned ? '<span class="history-pin">Закреплено</span>' : "";
+    const pinnedLabel = record.pinned ? '<span class="history-pin">★ Закреплено</span>' : "";
     const pinnedClass = record.pinned ? " history-card--pinned" : "";
     const pinAction = record.pinned ? "Открепить" : "Закрепить";
     const identifierLabel = meta.identifierLabel ? '<span>Юнит: ' + escapeHtml(meta.identifierLabel) + "</span>" : "";
@@ -495,17 +517,17 @@
       "<span>" +
       metricCount +
       " показателей</span>" +
-      "<span>" +
-      totalUnits +
-      " юнитов</span>" +
-      "<span>" +
-      totalCompared +
-      " полных строк</span>" +
       "<span>Режим: " +
       escapeHtml(modeLabel) +
       "</span>" +
       identifierLabel +
       "</div></div>" +
+      '<div class="history-stats">' +
+      historyStat("Юнитов", totalUnits) +
+      historyStat("Строк", rowCount) +
+      historyStat("Полных строк", totalCompared) +
+      historyStat("Изменений", changedCount) +
+      "</div>" +
       '<div class="history-actions">' +
       '<button class="button button-primary" type="button" data-action="open-history" data-history-id="' +
       escapeHtml(record.id) +
@@ -515,11 +537,42 @@
       '">' +
       pinAction +
       "</button>" +
+      '<button class="button button-secondary" type="button" data-action="rename-history" data-history-id="' +
+      escapeHtml(record.id) +
+      '">Переименовать</button>' +
       '<button class="button button-secondary history-delete-button" type="button" data-action="delete-history" data-history-id="' +
       escapeHtml(record.id) +
       '">Удалить</button>' +
       "</div></article>"
     );
+  }
+
+  function historyStat(label, value) {
+    return (
+      '<div class="history-stat"><span>' +
+      escapeHtml(label) +
+      "</span><strong>" +
+      escapeHtml(formatCompactNumber(value)) +
+      "</strong></div>"
+    );
+  }
+
+  function getHistoryChangedCount(record) {
+    const analytics = record.analytics;
+
+    if (!analytics || !Array.isArray(analytics.metricSummaries)) {
+      return 0;
+    }
+
+    return analytics.metricSummaries.reduce(function (sum, summary) {
+      return sum + (Number(summary.improvedCount) || 0) + (Number(summary.declinedCount) || 0);
+    }, 0);
+  }
+
+  function formatCompactNumber(value) {
+    return new Intl.NumberFormat("ru-RU", {
+      maximumFractionDigits: 0,
+    }).format(Number(value) || 0);
   }
 
   function formatHistoryDate(value) {
