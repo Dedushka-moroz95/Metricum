@@ -752,7 +752,9 @@
     }
 
     try {
-      await App.Exporters.exportExcel(state.comparison, state.mapping.metrics, state.analytics);
+      await App.Exporters.exportExcel(state.comparison, state.mapping.metrics, state.analytics, {
+        chartMetric: findMetric(state.selectedChartMetricId) || state.mapping.metrics[0],
+      });
     } catch (error) {
       state.messages.push({
         type: "error",
