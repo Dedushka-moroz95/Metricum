@@ -5,9 +5,13 @@
     dashboard: "Обзор",
     summary: "Сводка",
     comparison: "Сравнение",
+    charts: "Графики",
     missing: "Отсутствующие",
     duplicates: "Дубли",
   };
+  const CHART_IMAGE_WIDTH = 980;
+  const CHART_IMAGE_HEIGHT = 500;
+  const CHART_BLOCK_ROWS = 32;
   const EXCEL_FORMATS = {
     number: "#,##0.00",
     signedNumber: "+#,##0.00;-#,##0.00;0.00",
@@ -27,20 +31,19 @@
     downloadBlob("\ufeff" + csv, "comparison-report.csv", "text/csv;charset=utf-8");
   }
 
-  async function exportExcel(comparison, metrics, analytics, options) {
+  async function exportExcel(comparison, metrics, analytics) {
     if (!global.ExcelJS) {
       throw new Error("Библиотека ExcelJS не загружена");
     }
 
-    const exportOptions = options || {};
     const workbook = new global.ExcelJS.Workbook();
     workbook.creator = "Operational Analytics";
     workbook.created = new Date();
-    const chartMetric = exportOptions.chartMetric || metrics[0];
 
-    fillDashboardSheet(workbook.addWorksheet(SHEET_NAMES.dashboard), analytics, chartMetric);
+    fillDashboardSheet(workbook.addWorksheet(SHEET_NAMES.dashboard), analytics, metrics);
     fillSummarySheet(workbook.addWorksheet(SHEET_NAMES.summary), analytics);
-    fillComparisonSheet(workbook, workbook.addWorksheet(SHEET_NAMES.comparison), comparison, metrics, chartMetric);
+    fillComparisonSheet(workbook.addWorksheet(SHEET_NAMES.comparison), comparison, metrics);
+    fillChartsSheet(workbook, workbook.addWorksheet(SHEET_NAMES.charts), comparison, metrics);
     fillMissingSheet(workbook.addWorksheet(SHEET_NAMES.missing), comparison);
     fillDuplicateSheet(workbook.addWorksheet(SHEET_NAMES.duplicates), comparison);
 
@@ -58,9 +61,7 @@
     downloadBlob(buffer, "comparison-report.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   }
 
-  function fillDashboardSheet(sheet, analytics, chartMetric) {
-    const metricLabel = chartMetric ? chartMetric.label : "Показатель";
-
+  function fillDashboardSheet(sheet, analytics, metrics) {
     sheet.columns = [
       { key: "a", width: 24 },
       { key: "b", width: 18 },
@@ -77,7 +78,7 @@
     sheet.getRow(1).height = 30;
 
     sheet.mergeCells("A2:F2");
-    sheet.getCell("A2").value = "График динамики по показателю \"" + metricLabel + "\" находится на листе \"" + SHEET_NAMES.comparison + "\".";
+    sheet.getCell("A2").value = "Графики динамики по " + metrics.length + " показателям находятся на листе \"" + SHEET_NAMES.charts + "\".";
     sheet.getCell("A2").font = { bold: true, size: 12, color: { argb: "FF667085" } };
 
     sheet.addRow([]);
@@ -302,41 +303,67 @@
     styleHeaderRow(sheet);
   }
 
-  function fillComparisonSheet(workbook, sheet, comparison, metrics, chartMetric) {
+  function fillComparisonSheet(sheet, comparison, metrics) {
     const tableData = buildExcelRows(comparison, metrics);
-    const chartDataUrl = buildDashboardChartImage(comparison, chartMetric);
-    const hasChartImage = Boolean(chartDataUrl && typeof workbook.addImage === "function");
     const tableStartRow = 1;
 
     sheet.addRows(tableData.rows);
     styleHeaderRow(sheet, tableStartRow);
     applyExcelColumnFormats(sheet, tableData.columnFormats);
     sheet.getColumn(1).width = 28;
+  }
 
-    if (hasChartImage) {
-      const chartTitleRow = sheet.rowCount + 3;
+  function fillChartsSheet(workbook, sheet, comparison, metrics) {
+    sheet.columns = [
+      { key: "a", width: 24 },
+      { key: "b", width: 18 },
+      { key: "c", width: 18 },
+      { key: "d", width: 18 },
+      { key: "e", width: 18 },
+      { key: "f", width: 18 },
+      { key: "g", width: 18 },
+      { key: "h", width: 18 },
+    ];
 
-      sheet.mergeCells("A" + chartTitleRow + ":H" + chartTitleRow);
-      sheet.getCell("A" + chartTitleRow).value = "График динамики: " + (chartMetric ? chartMetric.label : "Показатель");
-      sheet.getCell("A" + chartTitleRow).font = { bold: true, size: 18, color: { argb: "FF18212F" } };
-      sheet.getCell("A" + chartTitleRow).alignment = { vertical: "middle" };
-      sheet.getRow(chartTitleRow).height = 28;
-
-      const imageId = workbook.addImage({
-        base64: chartDataUrl,
-        extension: "png",
-      });
-
-      sheet.addImage(imageId, {
-        tl: { col: 0, row: chartTitleRow },
-        ext: { width: 980, height: 500 },
-      });
-    } else {
-      const chartMessageRow = sheet.rowCount + 2;
-      sheet.mergeCells("A" + chartMessageRow + ":H" + chartMessageRow);
-      sheet.getCell("A" + chartMessageRow).value = "График недоступен для экспорта";
-      sheet.getCell("A" + chartMessageRow).font = { bold: true, size: 14, color: { argb: "FF667085" } };
+    if (!metrics.length) {
+      sheet.addRow(["Нет выбранных показателей для построения графиков"]);
+      return;
     }
+
+    metrics.forEach(function (metric, index) {
+      const titleRow = index === 0 ? 1 : sheet.rowCount + 3;
+      const chartDataUrl = buildDashboardChartImage(comparison, metric);
+
+      while (sheet.rowCount < titleRow - 1) {
+        sheet.addRow([]);
+      }
+
+      sheet.mergeCells("A" + titleRow + ":H" + titleRow);
+      sheet.getCell("A" + titleRow).value = "График динамики: " + (metric.label || "Показатель");
+      sheet.getCell("A" + titleRow).font = { bold: true, size: 18, color: { argb: "FF18212F" } };
+      sheet.getCell("A" + titleRow).alignment = { vertical: "middle" };
+      sheet.getRow(titleRow).height = 28;
+
+      if (chartDataUrl && typeof workbook.addImage === "function") {
+        const imageId = workbook.addImage({
+          base64: chartDataUrl,
+          extension: "png",
+        });
+
+        sheet.addImage(imageId, {
+          tl: { col: 0, row: titleRow },
+          ext: { width: CHART_IMAGE_WIDTH, height: CHART_IMAGE_HEIGHT },
+        });
+
+        while (sheet.rowCount < titleRow + CHART_BLOCK_ROWS) {
+          sheet.addRow([]);
+        }
+        return;
+      }
+
+      sheet.getCell("A" + (titleRow + 2)).value = "График недоступен для экспорта";
+      sheet.getCell("A" + (titleRow + 2)).font = { bold: true, size: 14, color: { argb: "FF667085" } };
+    });
   }
 
   function fillMissingSheet(sheet, comparison) {
