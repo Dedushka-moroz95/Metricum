@@ -287,6 +287,7 @@
           '" title="Удалить период">×</button>'
         : "";
     const clearFileDisabled = period.loading || (!period.file && !period.table) ? " disabled" : "";
+    const fileActionLabel = period.table ? "Выбрать другой файл" : period.file ? "Выбрать файл заново" : "Выбрать файл";
 
     return (
       '<div class="period-card" data-period-id="' +
@@ -308,6 +309,9 @@
       App.UI.escapeHtml(period.label) +
       "</span>" +
       '<span class="file-drop__hint">Excel, CSV или TSV</span>' +
+      '<span class="file-drop__button">' +
+      fileActionLabel +
+      "</span>" +
       '<input name="periodFile" data-period-id="' +
       period.id +
       '" type="file" accept=".xlsx,.xls,.csv,.tsv" />' +
