@@ -40,8 +40,12 @@
         <div class="section-title">
           <div class="step-heading">
             <span class="step-index">01</span>
-            <div>
+            <div class="title-with-help">
               <h2 id="uploadTitle">Файлы периодов</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: файлы периодов">
+                ?
+                <span class="help-tooltip" role="tooltip">Загрузите Excel-файлы за периоды, которые хотите сравнить. Если периодов больше двух, выберите итоговое или последовательное сравнение.</span>
+              </button>
             </div>
           </div>
           <span class="section-subtitle">Выберите общий срез или последовательную динамику</span>
@@ -65,8 +69,12 @@
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">02</span>
-            <div>
+            <div class="title-with-help">
               <h2 id="previewTitle">Preview таблиц</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: preview таблиц">
+                ?
+                <span class="help-tooltip" role="tooltip">Проверьте, что заголовки и первые строки считались корректно. Если таблица выглядит странно, проверьте исходный файл.</span>
+              </button>
             </div>
           </div>
           <span class="section-subtitle">Первые строки и найденные заголовки</span>
@@ -78,15 +86,19 @@
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">03</span>
-            <div>
+            <div class="title-with-help">
               <h2 id="mapperTitle">Сопоставление колонок</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: сопоставление колонок">
+                ?
+                <span class="help-tooltip" role="tooltip">Выберите колонку с объектом сравнения: сотрудником, командой, логином или группой. Затем добавьте показатели, по которым нужен расчет.</span>
+              </button>
             </div>
           </div>
-          <span class="section-subtitle">Юнит обязателен, показатели добавляются вручную</span>
+          <span class="section-subtitle">Объект сравнения обязателен, показатели добавляются вручную</span>
         </div>
 
         <div id="mapperControls" class="mapper-controls">
-          <div class="empty-state">Загрузите файлы, чтобы выбрать колонки с юнитами</div>
+          <div class="empty-state">Загрузите файлы, чтобы выбрать колонки с объектами сравнения</div>
         </div>
 
         <div class="metric-toolbar">
@@ -96,7 +108,7 @@
         </div>
 
         <div id="metricList" class="metric-list empty-state">
-          Выберите колонки с юнитами, чтобы добавить показатели
+          Выберите колонки с объектами сравнения, чтобы добавить показатели
         </div>
 
         <div class="action-row">
@@ -115,8 +127,12 @@
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">04</span>
-            <div>
+            <div class="title-with-help">
               <h2 id="historyTitle">История анализов</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: история анализов">
+                ?
+                <span class="help-tooltip" role="tooltip">Сохраняйте готовые анализы, чтобы открывать результаты без повторной загрузки Excel-файлов.</span>
+              </button>
             </div>
           </div>
           <span class="section-subtitle">Сохраненные результаты можно открыть без повторной загрузки файлов</span>
@@ -141,8 +157,12 @@
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">05</span>
-            <div>
+            <div class="title-with-help">
               <h2 id="dashboardTitle">Dashboard</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: dashboard">
+                ?
+                <span class="help-tooltip" role="tooltip">Здесь показана сводка по расчету: ключевые числа, график, лучшая и худшая динамика. График можно переключать по показателям.</span>
+              </button>
             </div>
           </div>
           <label class="field field-inline">
@@ -161,8 +181,12 @@
         <div class="section-title">
           <div class="step-heading">
             <span class="step-index">06</span>
-            <div>
+            <div class="title-with-help">
               <h2 id="resultsTitle">Таблица результатов</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: таблица результатов">
+                ?
+                <span class="help-tooltip" role="tooltip">Детальная таблица по каждому объекту сравнения. Здесь доступны экспорт CSV, Excel и сохранение анализа.</span>
+              </button>
             </div>
           </div>
           <div class="results-actions">

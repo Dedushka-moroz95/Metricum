@@ -352,14 +352,14 @@
 
   function renderIdColumnSelect(period) {
     return (
-      '<label class="field"><span>Юнит: ' +
+      '<label class="field"><span>Объект сравнения: ' +
       App.UI.escapeHtml(period.label) +
       '</span><select name="idColumn" data-period-id="' +
       period.id +
       '"' +
       (period.table ? "" : " disabled") +
       ">" +
-      buildColumnOptions(period.table, period.idColumn, "Выберите колонку с юнитом") +
+      buildColumnOptions(period.table, period.idColumn, "Колонка с объектом сравнения") +
       "</select></label>"
     );
   }
@@ -394,7 +394,7 @@
 
     if (!areIdsReady()) {
       dom.metricList.className = "metric-list empty-state";
-      dom.metricList.textContent = "Выберите колонки с юнитами для всех периодов";
+      dom.metricList.textContent = "Выберите колонки с объектами сравнения для всех периодов";
       dom.analyzeButton.disabled = true;
       return;
     }
@@ -578,7 +578,7 @@
     if (!isReadyToAnalyze()) {
       state.messages.push({
         type: "error",
-        message: "Для расчета нужны минимум два загруженных периода, колонки с юнитами и хотя бы один показатель",
+        message: "Для расчета нужны минимум два загруженных периода, колонки с объектами сравнения и хотя бы один показатель",
       });
       renderAll();
       return;
@@ -1119,7 +1119,7 @@
       if (item.items.length) {
         warnings.push({
           type: "warn",
-          message: "В периоде «" + item.periodLabel + "» есть строки без юнита: " + item.items.length,
+          message: "В периоде «" + item.periodLabel + "» есть строки без объекта сравнения: " + item.items.length,
         });
       }
     });
@@ -1128,7 +1128,7 @@
       if (item.items.length) {
         warnings.push({
           type: "warn",
-          message: "В периоде «" + item.periodLabel + "» есть дубли юнитов: " + item.items.length,
+          message: "В периоде «" + item.periodLabel + "» есть дубли объектов сравнения: " + item.items.length,
         });
       }
     });
@@ -1137,7 +1137,7 @@
       if (item.items.length) {
         warnings.push({
           type: "warn",
-          message: "В периоде «" + item.periodLabel + "» отсутствуют юниты: " + item.items.length,
+          message: "В периоде «" + item.periodLabel + "» отсутствуют объекты сравнения: " + item.items.length,
         });
       }
     });

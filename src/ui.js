@@ -187,7 +187,7 @@
     container.className = "summary-grid";
     container.innerHTML =
       summaryCard("Полных рядов", analytics.totalCompared) +
-      summaryCard("Всего юнитов", analytics.totalUnits) +
+      summaryCard("Всего объектов", analytics.totalUnits) +
       summaryCard("Периодов", analytics.periodCount) +
       summaryCard("Проблем", analytics.missingTotal + analytics.duplicateIds + analytics.invalidValues);
   }
@@ -301,7 +301,7 @@
 
     container.innerHTML =
       limitNote +
-      '<div class="table-scroll"><table class="results-table"><thead><tr><th>Юнит</th>' +
+      '<div class="table-scroll"><table class="results-table"><thead><tr><th>Объект</th>' +
       metricHeaders +
       "</tr></thead><tbody>" +
       rowsHtml +
@@ -492,7 +492,7 @@
     const pinnedLabel = record.pinned ? '<span class="history-pin">★ Закреплено</span>' : "";
     const pinnedClass = record.pinned ? " history-card--pinned" : "";
     const pinAction = record.pinned ? "Открепить" : "Закрепить";
-    const identifierLabel = meta.identifierLabel ? '<span>Юнит: ' + escapeHtml(meta.identifierLabel) + "</span>" : "";
+    const identifierLabel = meta.identifierLabel ? '<span>Объект: ' + escapeHtml(meta.identifierLabel) + "</span>" : "";
 
     return (
       '<article class="history-card' +
@@ -523,7 +523,7 @@
       identifierLabel +
       "</div></div>" +
       '<div class="history-stats">' +
-      historyStat("Юнитов", totalUnits) +
+      historyStat("Объектов", totalUnits) +
       historyStat("Строк", rowCount) +
       historyStat("Полных строк", totalCompared) +
       historyStat("Изменений", changedCount) +

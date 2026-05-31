@@ -84,7 +84,7 @@
     sheet.addRow([]);
     sheet.addRow(["Показатель", "Значение"]);
     sheet.addRow(["Периодов", analytics.periodCount]);
-    sheet.addRow(["Всего юнитов", analytics.totalUnits]);
+    sheet.addRow(["Всего объектов", analytics.totalUnits]);
     sheet.addRow(["Полных рядов", analytics.totalCompared]);
     sheet.addRow(["Проблем", analytics.missingTotal + analytics.duplicateIds + analytics.invalidValues]);
 
@@ -92,7 +92,7 @@
   }
 
   function buildFlatRows(comparison, metrics) {
-    const header = ["Юнит"];
+    const header = ["Объект"];
     const isSequential = comparison.comparisonMode === "sequential";
     const showTimeline = comparison.periods.length > 2 && !isSequential;
 
@@ -160,7 +160,7 @@
   }
 
   function buildExcelRows(comparison, metrics) {
-    const header = ["Юнит"];
+    const header = ["Объект"];
     const columnFormats = ["text"];
     const isSequential = comparison.comparisonMode === "sequential";
     const showTimeline = comparison.periods.length > 2 && !isSequential;
@@ -293,10 +293,10 @@
 
     sheet.addRows([
       { name: "Периодов", value: analytics.periodCount },
-      { name: "Всего юнитов", value: analytics.totalUnits },
+      { name: "Всего объектов", value: analytics.totalUnits },
       { name: "Полных рядов", value: analytics.totalCompared },
-      { name: "Отсутствующие юниты", value: analytics.missingTotal },
-      { name: "Дубликаты юнитов", value: analytics.duplicateIds },
+      { name: "Отсутствующие объекты", value: analytics.missingTotal },
+      { name: "Дубликаты объектов", value: analytics.duplicateIds },
       { name: "Нечисловые значения", value: analytics.invalidValues },
     ]);
 
@@ -367,7 +367,7 @@
   }
 
   function fillMissingSheet(sheet, comparison) {
-    sheet.addRow(["Период", "Юнит"]);
+    sheet.addRow(["Период", "Объект"]);
 
     comparison.missingByPeriod.forEach(function (group) {
       group.items.forEach(function (item) {
@@ -379,7 +379,7 @@
   }
 
   function fillDuplicateSheet(sheet, comparison) {
-    sheet.addRow(["Период", "Юнит", "Строки"]);
+    sheet.addRow(["Период", "Объект", "Строки"]);
 
     comparison.duplicatesByPeriod.forEach(function (group) {
       group.items.forEach(function (item) {
