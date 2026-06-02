@@ -21,22 +21,62 @@
     <script src="./main.js" defer></script>
   </head>
   <body>
-    <header class="app-header">
-      <div class="hero-copy">
-        <h1>Операционная аналитика</h1>
-        <p class="hero-lead">
-          Сравнивайте показатели между несколькими Excel-периодами без загрузки данных в сеть.
-        </p>
-      </div>
-      <div class="hero-panel">
-        <span class="hero-panel__label">Статус</span>
-        <div class="header-status" id="dependencyStatus">Проверка библиотек</div>
-        <span class="privacy-chip">100% локальная обработка</span>
-      </div>
-    </header>
+    <div class="app-layout">
+      <aside class="app-sidebar" aria-label="Навигация по приложению">
+        <div class="sidebar-brand">
+          <span class="brand-mark">OA</span>
+          <div>
+            <strong>Операционная аналитика</strong>
+            <span>Локальный dashboard</span>
+          </div>
+        </div>
 
-    <main class="app-shell">
-      <section class="workspace-section upload-grid" aria-labelledby="uploadTitle">
+        <nav class="sidebar-nav" aria-label="Разделы">
+          <a href="#dashboardSection" class="sidebar-link">
+            <span class="sidebar-link__icon">D</span>
+            Dashboard
+          </a>
+          <a href="#uploadSection" class="sidebar-link">
+            <span class="sidebar-link__icon">F</span>
+            Файлы периодов
+          </a>
+          <a href="#mapperSection" class="sidebar-link">
+            <span class="sidebar-link__icon">M</span>
+            Сопоставление
+          </a>
+          <a href="#historySection" class="sidebar-link">
+            <span class="sidebar-link__icon">H</span>
+            История
+          </a>
+          <a href="#resultsSection" class="sidebar-link">
+            <span class="sidebar-link__icon">T</span>
+            Таблица
+          </a>
+          <a href="#resultsSection" class="sidebar-link">
+            <span class="sidebar-link__icon">E</span>
+            Экспорт
+          </a>
+        </nav>
+
+        <div class="sidebar-panel">
+          <span class="sidebar-panel__label">Статус</span>
+          <div class="header-status" id="dependencyStatus">Проверка библиотек</div>
+          <span class="privacy-chip">100% локально</span>
+        </div>
+      </aside>
+
+      <div class="app-main">
+        <header class="app-header">
+          <div class="hero-copy">
+            <h1>Операционная аналитика</h1>
+            <p class="hero-lead">
+              Сравнивайте показатели между несколькими Excel-периодами без загрузки данных в сеть.
+            </p>
+          </div>
+        </header>
+
+        <main class="app-shell">
+          <section id="uploadSection" class="workspace-section upload-grid" aria-labelledby="uploadTitle">
         <div class="section-title">
           <div class="step-heading">
             <span class="step-index">01</span>
@@ -63,9 +103,9 @@
         </div>
 
         <div id="periodList" class="period-list"></div>
-      </section>
+          </section>
 
-      <section class="workspace-section preview-grid" aria-labelledby="previewTitle">
+          <section id="previewSection" class="workspace-section preview-grid" aria-labelledby="previewTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">02</span>
@@ -80,9 +120,9 @@
           <span class="section-subtitle">Первые строки и найденные заголовки</span>
         </div>
         <div id="previewList" class="preview-list"></div>
-      </section>
+          </section>
 
-      <section class="workspace-section mapper-grid" aria-labelledby="mapperTitle">
+          <section id="mapperSection" class="workspace-section mapper-grid" aria-labelledby="mapperTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">03</span>
@@ -121,9 +161,9 @@
             Проверок пока нет
           </div>
         </div>
-      </section>
+          </section>
 
-      <section class="workspace-section history-layout" aria-labelledby="historyTitle">
+          <section id="historySection" class="workspace-section history-layout" aria-labelledby="historyTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">04</span>
@@ -151,9 +191,9 @@
         <div id="historyList" class="history-list empty-state">
           Сохраненные анализы появятся здесь после расчета и сохранения результата.
         </div>
-      </section>
+          </section>
 
-      <section class="workspace-section dashboard-layout" aria-labelledby="dashboardTitle">
+          <section id="dashboardSection" class="workspace-section dashboard-layout" aria-labelledby="dashboardTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">05</span>
@@ -175,9 +215,9 @@
           <canvas id="deltaChart" height="120"></canvas>
         </div>
         <div id="moversPanel" class="movers-grid"></div>
-      </section>
+          </section>
 
-      <section class="workspace-section" aria-labelledby="resultsTitle">
+          <section id="resultsSection" class="workspace-section" aria-labelledby="resultsTitle">
         <div class="section-title">
           <div class="step-heading">
             <span class="step-index">06</span>
@@ -202,8 +242,10 @@
           </div>
         </div>
         <div id="resultsTable" class="results-panel empty-state">Нет рассчитанных данных</div>
-      </section>
-    </main>
+          </section>
+        </main>
+      </div>
+    </div>
 
     <div id="saveAnalysisModal" class="modal-backdrop" hidden>
       <form id="saveAnalysisForm" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="saveAnalysisTitle">
