@@ -18,6 +18,7 @@
     <script src="./src/charts.js" defer></script>
     <script src="./src/ui.js" defer></script>
     <script src="./src/motion.js" defer></script>
+    <script src="./src/navigation.js" defer></script>
     <script src="./main.js" defer></script>
   </head>
   <body>
@@ -52,7 +53,7 @@
             <span class="sidebar-link__icon">T</span>
             Таблица
           </a>
-          <a href="#resultsSection" class="sidebar-link">
+          <a href="#exportSection" class="sidebar-link">
             <span class="sidebar-link__icon">E</span>
             Экспорт
           </a>
@@ -229,7 +230,7 @@
               </button>
             </div>
           </div>
-          <div class="results-actions">
+          <div id="exportSection" class="results-actions">
             <button id="exportCsvButton" class="button button-secondary" type="button" disabled>
               CSV
             </button>
