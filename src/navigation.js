@@ -114,7 +114,11 @@
   }
 
   function getNavigationOffset() {
-    return global.innerWidth < 1100 ? 140 : 32;
+    if (global.innerWidth < 761) {
+      return 250;
+    }
+
+    return global.innerWidth < 1100 ? 260 : 32;
   }
 
   function setActiveSection(sectionId) {
