@@ -459,6 +459,76 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   display: none;
 }
 
+.sidebar-mapping-card {
+  gap: 10px;
+  overflow: hidden;
+}
+
+.sidebar-mapping-card .mapper-controls {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.sidebar-mapping-card .metric-toolbar {
+  display: block;
+  grid-column: auto;
+}
+
+.sidebar-mapping-card .metric-toolbar .button {
+  width: 100%;
+}
+
+.sidebar-mapping-card .metric-list {
+  gap: 8px;
+  min-width: 0;
+}
+
+.sidebar-mapping-card .metric-list:not(.empty-state) {
+  max-height: min(380px, 42vh);
+  padding-right: 2px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.sidebar-mapping-card .empty-state {
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.sidebar-mapping-card .metric-row,
+.sidebar-mapping-card .metric-row--multi {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.sidebar-mapping-card .metric-columns {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.sidebar-mapping-card .metric-name {
+  gap: 5px;
+}
+
+.sidebar-mapping-card .metric-name strong {
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.sidebar-mapping-card .icon-button {
+  justify-self: end;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
 .sidebar-panel {
   display: grid;
   gap: 10px;
@@ -2376,7 +2446,7 @@ input:disabled {
 
   .sidebar-control-stack {
     grid-column: 1 / -1;
-    grid-template-columns: repeat(5, minmax(220px, 1fr));
+    grid-template-columns: repeat(6, minmax(220px, 1fr));
     overflow-x: auto;
     padding-bottom: 2px;
     scrollbar-width: thin;
@@ -2465,7 +2535,7 @@ input:disabled {
   }
 
   .sidebar-control-stack {
-    grid-template-columns: repeat(5, minmax(220px, 78vw));
+    grid-template-columns: repeat(6, minmax(220px, 78vw));
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 4px;

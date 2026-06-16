@@ -42,10 +42,6 @@
             <span class="sidebar-link__icon">P</span>
             Preview
           </a>
-          <a href="#mapperSection" class="sidebar-link">
-            <span class="sidebar-link__icon">M</span>
-            Сопоставление
-          </a>
           <a href="#historySection" class="sidebar-link">
             <span class="sidebar-link__icon">H</span>
             История
@@ -76,6 +72,23 @@
               </select>
             </label>
             <button id="addPeriodButton" class="button button-secondary" type="button">+ Период</button>
+          </section>
+
+          <section id="mapperSection" class="sidebar-control-card sidebar-mapping-card" aria-label="Сопоставление колонок">
+            <span class="sidebar-panel__label">Сопоставление</span>
+            <div id="mapperControls" class="mapper-controls">
+              <div class="empty-state">Загрузите файлы, чтобы выбрать колонки с объектами сравнения</div>
+            </div>
+
+            <div class="metric-toolbar">
+              <button id="addMetricButton" class="button button-secondary" type="button" disabled>
+                + Показатель
+              </button>
+            </div>
+
+            <div id="metricList" class="metric-list empty-state">
+              Выберите колонки с объектами сравнения, чтобы добавить показатели
+            </div>
           </section>
 
           <section class="sidebar-control-card" aria-label="Расчет и проверки">
@@ -198,41 +211,10 @@
         <div id="previewList" class="preview-list"></div>
           </section>
 
-          <section id="mapperSection" class="workspace-section mapper-grid" aria-labelledby="mapperTitle">
-        <div class="section-title section-title--wide">
-          <div class="step-heading">
-            <span class="step-index">03</span>
-            <div class="title-with-help">
-              <h2 id="mapperTitle">Сопоставление колонок</h2>
-              <button class="help-button" type="button" aria-label="Подсказка: сопоставление колонок">
-                ?
-                <span class="help-tooltip" role="tooltip">Выберите колонку с объектом сравнения: сотрудником, командой, логином или группой. Затем добавьте показатели, по которым нужен расчет.</span>
-              </button>
-            </div>
-          </div>
-          <span class="section-subtitle">Объект сравнения обязателен, показатели добавляются вручную</span>
-        </div>
-
-        <div id="mapperControls" class="mapper-controls">
-          <div class="empty-state">Загрузите файлы, чтобы выбрать колонки с объектами сравнения</div>
-        </div>
-
-        <div class="metric-toolbar">
-          <button id="addMetricButton" class="button button-secondary" type="button" disabled>
-            + Показатель
-          </button>
-        </div>
-
-        <div id="metricList" class="metric-list empty-state">
-          Выберите колонки с объектами сравнения, чтобы добавить показатели
-        </div>
-
-          </section>
-
           <section id="historySection" class="workspace-section history-layout" aria-labelledby="historyTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
-            <span class="step-index">04</span>
+            <span class="step-index">03</span>
             <div class="title-with-help">
               <h2 id="historyTitle">История анализов</h2>
               <button class="help-button" type="button" aria-label="Подсказка: история анализов">
@@ -262,7 +244,7 @@
           <section id="resultsSection" class="workspace-section" aria-labelledby="resultsTitle">
         <div class="section-title">
           <div class="step-heading">
-            <span class="step-index">05</span>
+            <span class="step-index">04</span>
             <div class="title-with-help">
               <h2 id="resultsTitle">Таблица результатов</h2>
               <button class="help-button" type="button" aria-label="Подсказка: таблица результатов">
