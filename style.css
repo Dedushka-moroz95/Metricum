@@ -12,9 +12,9 @@
   --danger: #e11d48;
   --warning: #f59e0b;
   --neutral: #94a3b8;
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --radius-md: 16px;
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
   --shadow-soft: 0 18px 44px rgba(24, 33, 47, 0.06);
   --container: 1480px;
   --sidebar-width: 300px;
@@ -605,10 +605,10 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 .app-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 32px;
+  gap: 22px;
   width: min(var(--container), calc(100% - 48px));
   margin: 0 auto;
-  padding: 48px 0 28px;
+  padding: 30px 0 18px;
 }
 
 .hero-copy {
@@ -627,17 +627,17 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 
 .app-header h1 {
   max-width: 920px;
-  margin: 8px 0 0;
-  font-size: clamp(48px, 6vw, 64px);
-  line-height: 0.94;
+  margin: 4px 0 0;
+  font-size: clamp(34px, 4vw, 44px);
+  line-height: 1;
   letter-spacing: 0;
 }
 
 .hero-lead {
   max-width: 720px;
-  margin: 22px 0 0;
+  margin: 12px 0 0;
   color: var(--text-secondary);
-  font-size: clamp(17px, 2vw, 22px);
+  font-size: clamp(15px, 1.45vw, 18px);
   line-height: 1.45;
 }
 
@@ -703,16 +703,16 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 
 .app-shell {
   display: grid;
-  gap: 24px;
+  gap: 18px;
   width: min(var(--container), calc(100% - 48px));
-  margin: 0 auto 56px;
+  margin: 0 auto 42px;
 }
 
 .workspace-section {
   display: grid;
-  gap: 24px;
+  gap: 18px;
   scroll-margin-top: 24px;
-  padding: clamp(22px, 3vw, 32px);
+  padding: clamp(18px, 2vw, 24px);
   border: 1px solid rgba(226, 232, 240, 0.95);
   border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.92);
@@ -738,7 +738,7 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -749,7 +749,7 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 .step-heading {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -764,19 +764,19 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   display: inline-grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   border: 1px solid rgba(15, 118, 110, 0.28);
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-bright) 100%);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
 }
 
 .section-title h2 {
   margin: 0;
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(20px, 2.4vw, 26px);
   line-height: 1.05;
   letter-spacing: 0;
 }
@@ -786,13 +786,13 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   display: inline-grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: 1px solid rgba(15, 118, 110, 0.22);
   border-radius: 50%;
   background: rgba(204, 251, 241, 0.58);
   color: var(--primary);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 950;
   line-height: 1;
   cursor: help;
@@ -1066,7 +1066,7 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 .results-panel {
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
   transition:
@@ -1086,20 +1086,20 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 .table-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 14px 16px;
+  gap: 6px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   background: var(--card-soft);
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .table-meta span {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 5px 10px;
+  min-height: 24px;
+  padding: 4px 8px;
   border-radius: 999px;
   background: var(--card);
 }
@@ -1169,7 +1169,7 @@ table {
 th,
 td {
   max-width: 300px;
-  padding: 14px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid rgba(226, 232, 240, 0.86);
   border-right: 1px solid rgba(226, 232, 240, 0.72);
   text-align: left;
@@ -1192,7 +1192,7 @@ td:last-child {
 
 .results-table th,
 .results-table td {
-  padding: 12px 14px;
+  padding: 9px 11px;
   border-bottom-color: rgba(226, 232, 240, 0.78);
   border-right-color: rgba(226, 232, 240, 0.64);
 }
@@ -1232,7 +1232,7 @@ th {
   z-index: 2;
   background: rgba(248, 250, 252, 0.96);
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1252,9 +1252,9 @@ th {
 
 .th-subtitle {
   display: block;
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--neutral);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: none;
@@ -1554,12 +1554,12 @@ input:disabled {
   position: relative;
   display: grid;
   grid-template-columns: minmax(240px, 1.25fr) minmax(260px, 0.9fr) minmax(190px, 0.58fr);
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   min-width: 0;
-  padding: 14px;
+  padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.82);
   transition:
     transform 220ms var(--ease-premium),
@@ -1586,7 +1586,7 @@ input:disabled {
 .history-card--pinned::before {
   content: "";
   position: absolute;
-  inset: 14px auto 14px 0;
+  inset: 12px auto 12px 0;
   width: 3px;
   border-radius: 0 999px 999px 0;
   background: var(--primary);
@@ -1594,7 +1594,7 @@ input:disabled {
 
 .history-card__body {
   display: grid;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
 }
 
@@ -1602,7 +1602,7 @@ input:disabled {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -1610,7 +1610,7 @@ input:disabled {
   margin: 0;
   overflow: hidden;
   color: var(--text);
-  font-size: clamp(16px, 1.45vw, 20px);
+  font-size: clamp(15px, 1.25vw, 18px);
   font-weight: 950;
   letter-spacing: 0;
   line-height: 1.1;
@@ -1954,26 +1954,26 @@ input:disabled {
 
 .dashboard-layout {
   grid-template-columns: 1fr;
-  gap: 26px;
-  padding: clamp(24px, 3vw, 36px);
+  gap: 18px;
+  padding: clamp(18px, 2vw, 24px);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
 }
 
 .summary-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 1.28fr) repeat(3, minmax(170px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .summary-card {
   position: relative;
   display: grid;
   align-content: space-between;
-  gap: 18px;
+  gap: 10px;
   min-width: 0;
-  min-height: 158px;
-  padding: 26px;
+  min-height: 108px;
+  padding: 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.88);
@@ -1989,13 +1989,13 @@ input:disabled {
   background:
     linear-gradient(135deg, rgba(15, 118, 110, 0.98), rgba(20, 184, 166, 0.88));
   border-color: rgba(15, 118, 110, 0.34);
-  box-shadow: 0 18px 40px rgba(15, 118, 110, 0.14);
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.12);
 }
 
 .summary-card:first-child::after {
   content: "";
   position: absolute;
-  inset: auto 22px 18px;
+  inset: auto 18px 14px;
   height: 1px;
   background: rgba(255, 255, 255, 0.26);
 }
@@ -2003,16 +2003,16 @@ input:disabled {
 .summary-card:hover,
 .mover-card:hover,
 .chart-panel:hover {
-  --hover-y: -2px;
-  transform: translateY(-2px);
+  --hover-y: -1px;
+  transform: translateY(-1px);
   border-color: #cbd5e1;
-  box-shadow: 0 16px 36px rgba(24, 33, 47, 0.055);
+  box-shadow: 0 12px 28px rgba(24, 33, 47, 0.05);
 }
 
 .summary-card span {
   display: block;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1.2;
   text-transform: uppercase;
@@ -2026,9 +2026,9 @@ input:disabled {
   display: block;
   margin-top: 0;
   color: var(--text);
-  font-size: clamp(46px, 5vw, 74px);
+  font-size: clamp(30px, 3vw, 44px);
   font-weight: 950;
-  line-height: 0.86;
+  line-height: 0.94;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -2039,14 +2039,14 @@ input:disabled {
 
 .chart-panel {
   display: grid;
-  gap: 18px;
-  min-height: 560px;
-  padding: 30px;
+  gap: 14px;
+  min-height: 420px;
+  padding: 22px;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.88));
-  box-shadow: 0 18px 46px rgba(24, 33, 47, 0.055);
+  box-shadow: 0 12px 34px rgba(24, 33, 47, 0.05);
   overflow: hidden;
   transition:
     transform 240ms var(--ease-premium),
@@ -2058,15 +2058,15 @@ input:disabled {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   min-width: 0;
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid rgba(226, 232, 240, 0.84);
 }
 
 .chart-panel__header span {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -2074,7 +2074,7 @@ input:disabled {
 .chart-panel__header strong {
   overflow: hidden;
   color: var(--text);
-  font-size: clamp(20px, 2vw, 28px);
+  font-size: clamp(17px, 1.6vw, 22px);
   font-weight: 950;
   letter-spacing: 0;
   text-overflow: ellipsis;
@@ -2083,18 +2083,18 @@ input:disabled {
 
 .chart-panel canvas {
   width: 100% !important;
-  height: 470px !important;
+  height: 340px !important;
 }
 
 .movers-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .mover-card {
   min-width: 0;
-  padding: 24px;
+  padding: 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--card-soft);
@@ -2106,28 +2106,28 @@ input:disabled {
 }
 
 .mover-card > h3 {
-  margin: 0 0 16px;
-  font-size: clamp(21px, 2vw, 28px);
+  margin: 0 0 12px;
+  font-size: clamp(18px, 1.6vw, 22px);
   line-height: 1.1;
   letter-spacing: 0;
 }
 
 .mover-card .movers-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 .mover-card .movers-grid > div {
   min-width: 0;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: #fff;
 }
 
 .mover-card h3 {
-  margin: 0 0 12px;
-  font-size: 15px;
+  margin: 0 0 8px;
+  font-size: 14px;
 }
 
 .mover-list {
@@ -2142,11 +2142,11 @@ input:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
+  gap: 10px;
+  padding: 8px 0;
   border-bottom: 1px solid var(--border);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -2167,7 +2167,7 @@ input:disabled {
 }
 
 .mover-list strong {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 950;
 }
 
@@ -2554,15 +2554,15 @@ input:disabled {
   }
 
   .summary-card {
-    min-height: 142px;
+    min-height: 110px;
   }
 
   .chart-panel {
-    min-height: 500px;
+    min-height: 400px;
   }
 
   .chart-panel canvas {
-    height: 410px !important;
+    height: 320px !important;
   }
 }
 
@@ -2665,26 +2665,26 @@ input:disabled {
   }
 
   .app-shell {
-    gap: 16px;
-    margin-bottom: 36px;
+    gap: 14px;
+    margin-bottom: 30px;
   }
 
   .app-header {
-    padding-top: 34px;
-    gap: 22px;
+    padding-top: 24px;
+    gap: 16px;
   }
 
   .app-header h1 {
-    font-size: clamp(42px, 14vw, 58px);
+    font-size: clamp(32px, 11vw, 42px);
   }
 
   .workspace-section {
-    padding: 18px;
-    border-radius: 22px;
+    padding: 16px;
+    border-radius: 20px;
   }
 
   .dashboard-layout {
-    gap: 18px;
+    gap: 14px;
   }
 
   .section-title,
@@ -2721,8 +2721,8 @@ input:disabled {
   }
 
   .step-index {
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
   }
 
   .file-drop {
@@ -2736,12 +2736,12 @@ input:disabled {
   }
 
   .summary-card {
-    min-height: 126px;
-    padding: 22px;
+    min-height: 100px;
+    padding: 16px;
   }
 
   .summary-card strong {
-    font-size: clamp(40px, 18vw, 58px);
+    font-size: clamp(30px, 13vw, 42px);
   }
 
   .chart-panel__header {
@@ -2828,7 +2828,7 @@ input:disabled {
   th,
   td {
     min-width: 138px;
-    padding: 12px 14px;
+    padding: 10px 12px;
   }
 
   .results-table th:first-child,
@@ -2838,12 +2838,12 @@ input:disabled {
   }
 
   .chart-panel {
-    min-height: 360px;
-    padding: 18px;
+    min-height: 310px;
+    padding: 16px;
   }
 
   .chart-panel canvas {
-    height: 300px !important;
+    height: 240px !important;
   }
 
   .modal-backdrop {
