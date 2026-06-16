@@ -34,21 +34,21 @@
         </div>
 
         <nav class="sidebar-nav" aria-label="Разделы">
-          <a href="#dashboardSection" class="sidebar-link">
-            <span class="sidebar-link__icon">D</span>
-            Dashboard
-          </a>
           <a href="#previewSection" class="sidebar-link">
             <span class="sidebar-link__icon">P</span>
             Preview
           </a>
-          <a href="#historySection" class="sidebar-link">
-            <span class="sidebar-link__icon">H</span>
-            История
+          <a href="#dashboardSection" class="sidebar-link">
+            <span class="sidebar-link__icon">D</span>
+            Dashboard
           </a>
           <a href="#resultsSection" class="sidebar-link">
             <span class="sidebar-link__icon">T</span>
             Таблица
+          </a>
+          <a href="#historySection" class="sidebar-link">
+            <span class="sidebar-link__icon">H</span>
+            История
           </a>
           <a href="#exportSection" class="sidebar-link">
             <span class="sidebar-link__icon">E</span>
@@ -166,10 +166,27 @@
         </header>
 
         <main class="app-shell">
-          <section id="dashboardSection" class="workspace-section dashboard-layout" aria-labelledby="dashboardTitle">
+          <section id="previewSection" class="workspace-section preview-grid" aria-labelledby="previewTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
             <span class="step-index">01</span>
+            <div class="title-with-help">
+              <h2 id="previewTitle">Preview таблиц</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: preview таблиц">
+                ?
+                <span class="help-tooltip" role="tooltip">Проверьте, что заголовки и первые строки считались корректно. Если таблица выглядит странно, проверьте исходный файл.</span>
+              </button>
+            </div>
+          </div>
+          <span class="section-subtitle">Первые строки и найденные заголовки</span>
+        </div>
+        <div id="previewList" class="preview-list"></div>
+          </section>
+
+          <section id="dashboardSection" class="workspace-section dashboard-layout" aria-labelledby="dashboardTitle">
+        <div class="section-title section-title--wide">
+          <div class="step-heading">
+            <span class="step-index">02</span>
             <div class="title-with-help">
               <h2 id="dashboardTitle">Dashboard</h2>
               <button class="help-button" type="button" aria-label="Подсказка: dashboard">
@@ -194,27 +211,27 @@
         <div id="moversPanel" class="movers-grid"></div>
           </section>
 
-          <section id="previewSection" class="workspace-section preview-grid" aria-labelledby="previewTitle">
-        <div class="section-title section-title--wide">
+          <section id="resultsSection" class="workspace-section" aria-labelledby="resultsTitle">
+        <div class="section-title">
           <div class="step-heading">
-            <span class="step-index">02</span>
+            <span class="step-index">03</span>
             <div class="title-with-help">
-              <h2 id="previewTitle">Preview таблиц</h2>
-              <button class="help-button" type="button" aria-label="Подсказка: preview таблиц">
+              <h2 id="resultsTitle">Таблица результатов</h2>
+              <button class="help-button" type="button" aria-label="Подсказка: таблица результатов">
                 ?
-                <span class="help-tooltip" role="tooltip">Проверьте, что заголовки и первые строки считались корректно. Если таблица выглядит странно, проверьте исходный файл.</span>
+                <span class="help-tooltip" role="tooltip">Детальная таблица по каждому объекту сравнения. Здесь доступны экспорт CSV, Excel и сохранение анализа.</span>
               </button>
             </div>
           </div>
-          <span class="section-subtitle">Первые строки и найденные заголовки</span>
         </div>
-        <div id="previewList" class="preview-list"></div>
+        <span id="exportSection" class="section-anchor" aria-hidden="true"></span>
+        <div id="resultsTable" class="results-panel empty-state">Нет рассчитанных данных</div>
           </section>
 
           <section id="historySection" class="workspace-section history-layout" aria-labelledby="historyTitle">
         <div class="section-title section-title--wide">
           <div class="step-heading">
-            <span class="step-index">03</span>
+            <span class="step-index">04</span>
             <div class="title-with-help">
               <h2 id="historyTitle">История анализов</h2>
               <button class="help-button" type="button" aria-label="Подсказка: история анализов">
@@ -239,23 +256,6 @@
         <div id="historyList" class="history-list empty-state">
           Сохраненные анализы появятся здесь после расчета и сохранения результата.
         </div>
-          </section>
-
-          <section id="resultsSection" class="workspace-section" aria-labelledby="resultsTitle">
-        <div class="section-title">
-          <div class="step-heading">
-            <span class="step-index">04</span>
-            <div class="title-with-help">
-              <h2 id="resultsTitle">Таблица результатов</h2>
-              <button class="help-button" type="button" aria-label="Подсказка: таблица результатов">
-                ?
-                <span class="help-tooltip" role="tooltip">Детальная таблица по каждому объекту сравнения. Здесь доступны экспорт CSV, Excel и сохранение анализа.</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <span id="exportSection" class="section-anchor" aria-hidden="true"></span>
-        <div id="resultsTable" class="results-panel empty-state">Нет рассчитанных данных</div>
           </section>
         </main>
       </div>
