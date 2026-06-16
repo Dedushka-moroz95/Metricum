@@ -298,21 +298,17 @@
       state.periods.length > 2
         ? '<button class="period-remove" type="button" data-action="remove-period" data-period-id="' +
           period.id +
-          '" title="Удалить период">×</button>'
+          '" title="Удалить период" aria-label="Удалить период">×</button>'
         : "";
+    const periodActions = removeButton ? '<div class="period-card__top">' + removeButton + "</div>" : "";
     const clearFileDisabled = period.loading || (!period.file && !period.table) ? " disabled" : "";
-    const fileActionLabel = period.table ? "Выбрать другой файл" : period.file ? "Выбрать файл заново" : "Выбрать файл";
+    const fileActionLabel = "Загрузить";
 
     return (
       '<div class="period-card" data-period-id="' +
       period.id +
       '">' +
-      '<div class="period-card__top">' +
-      '<span class="period-badge">' +
-      String(index + 1).padStart(2, "0") +
-      "</span>" +
-      removeButton +
-      "</div>" +
+      periodActions +
       '<label class="field period-name-field"><span>Название периода</span><input type="text" name="periodLabel" data-period-id="' +
       period.id +
       '" value="' +
@@ -336,9 +332,9 @@
       '<div class="period-file-actions">' +
       '<button class="button button-secondary file-clear-button" type="button" data-action="clear-period-file" data-period-id="' +
       period.id +
-      '"' +
+      '" title="Удалить файл" aria-label="Удалить файл"' +
       clearFileDisabled +
-      ">Удалить файл</button>" +
+      ">×</button>" +
       "</div>" +
       "</div>"
     );

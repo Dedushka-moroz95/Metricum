@@ -17,7 +17,9 @@
   --radius-md: 16px;
   --shadow-soft: 0 18px 44px rgba(24, 33, 47, 0.06);
   --container: 1480px;
-  --sidebar-width: 280px;
+  --sidebar-width: 300px;
+  --sidebar-min-width: 250px;
+  --sidebar-max-width: 420px;
   --ease: 0.24s ease;
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -68,6 +70,11 @@ input[type="file"],
   min-height: 100vh;
 }
 
+body.is-sidebar-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
 .app-sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -77,6 +84,8 @@ input[type="file"],
   align-content: start;
   gap: 18px;
   width: var(--sidebar-width);
+  min-width: var(--sidebar-min-width);
+  max-width: var(--sidebar-max-width);
   padding: 24px 18px;
   border-right: 1px solid rgba(226, 232, 240, 0.92);
   background: rgba(255, 255, 255, 0.86);
@@ -84,6 +93,40 @@ input[type="file"],
   backdrop-filter: blur(18px);
   overflow-y: auto;
   scrollbar-width: thin;
+}
+
+.sidebar-resize-handle {
+  position: fixed;
+  top: 0;
+  left: calc(var(--sidebar-width) - 5px);
+  z-index: 35;
+  width: 10px;
+  height: 100vh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+}
+
+.sidebar-resize-handle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 2px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.42);
+  transform: translateY(-50%);
+  transition:
+    background-color 180ms ease,
+    height 180ms ease;
+}
+
+.sidebar-resize-handle:hover::before,
+.sidebar-resize-handle:focus-visible::before {
+  height: 64px;
+  background: rgba(15, 118, 110, 0.72);
 }
 
 .app-main {
@@ -262,30 +305,35 @@ input[type="file"],
 
 .sidebar-upload-card {
   gap: 10px;
+  overflow: hidden;
 }
 
 .sidebar-period-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .sidebar-upload-card .period-card {
-  gap: 8px;
-  padding: 9px;
-  border-radius: 14px;
+  position: relative;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.74);
+  overflow: hidden;
 }
 
 .sidebar-upload-card .period-card__top {
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
 
-.sidebar-upload-card .period-badge,
 .sidebar-upload-card .period-remove {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 9px;
   font-size: 10px;
 }
@@ -300,20 +348,23 @@ input[type="file"],
 }
 
 .sidebar-upload-card .period-name-field input {
-  min-height: 32px;
-  padding: 6px 9px;
+  min-height: 30px;
+  min-width: 0;
+  padding: 5px 8px;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 800;
 }
 
 .sidebar-upload-card .file-drop {
-  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
-  gap: 6px 8px;
+  gap: 6px;
   min-height: 0;
-  padding: 9px;
-  border-radius: 12px;
+  padding: 7px 8px;
+  border-radius: 11px;
   background:
     linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)) padding-box,
     linear-gradient(135deg, rgba(15, 118, 110, 0.34), rgba(226, 232, 240, 0.84)) border-box;
@@ -331,18 +382,22 @@ input[type="file"],
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
-  font-size: 12px;
+  overflow: hidden;
+  font-size: 11px;
   line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-upload-card .file-drop__button {
   grid-column: 2;
   grid-row: 1;
-  min-height: 28px;
-  padding: 6px 9px;
-  border-radius: 10px;
+  min-height: 26px;
+  padding: 5px 8px;
+  border-radius: 9px;
   font-size: 11px;
   box-shadow: none;
+  white-space: nowrap;
 }
 
 .sidebar-upload-card .period-file-actions {
@@ -350,12 +405,24 @@ input[type="file"],
 }
 
 .sidebar-upload-card .file-clear-button {
-  width: auto;
-  min-height: 28px;
-  padding: 5px 8px;
-  border-radius: 10px;
-  background: transparent;
-  font-size: 11px;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border-color: #ffe4e6;
+  border-radius: 9px;
+  background: #fff1f2;
+  color: var(--danger);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sidebar-upload-card .file-clear-button:disabled {
+  background: rgba(248, 250, 252, 0.78);
+  color: var(--neutral);
 }
 
 .sidebar-panel {
@@ -2248,11 +2315,17 @@ input:disabled {
     grid-template-rows: auto auto;
     align-items: center;
     width: 100%;
+    min-width: 0;
+    max-width: none;
     max-height: 100vh;
     padding: 12px 18px;
     border-right: 0;
     border-bottom: 1px solid rgba(226, 232, 240, 0.92);
     overflow-y: auto;
+  }
+
+  .sidebar-resize-handle {
+    display: none;
   }
 
   .app-main {
