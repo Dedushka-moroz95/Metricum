@@ -73,6 +73,14 @@
       missing.push("ExcelJS");
     }
 
+    if (!dom.dependencyStatus) {
+      if (missing.length) {
+        console.error("Не загружены локальные библиотеки: " + missing.join(", "));
+      }
+
+      return;
+    }
+
     if (missing.length) {
       dom.dependencyStatus.className = "header-status error";
       dom.dependencyStatus.textContent = "Не загружено: " + missing.join(", ");
