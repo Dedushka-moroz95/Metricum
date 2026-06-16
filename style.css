@@ -460,13 +460,39 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 }
 
 .sidebar-mapping-card {
-  gap: 10px;
+  gap: 9px;
   overflow: hidden;
 }
 
 .sidebar-mapping-card .mapper-controls {
   grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sidebar-mapping-card .field {
+  gap: 4px;
+  min-width: 0;
+}
+
+.sidebar-mapping-card .field span,
+.sidebar-mapping-card .metric-name span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-mapping-card select {
+  min-height: 36px;
+  min-width: 0;
+  padding: 7px 32px 7px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 760;
 }
 
 .sidebar-mapping-card .metric-toolbar {
@@ -476,22 +502,28 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 
 .sidebar-mapping-card .metric-toolbar .button {
   width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
 }
 
 .sidebar-mapping-card .metric-list {
-  gap: 8px;
+  gap: 7px;
   min-width: 0;
 }
 
 .sidebar-mapping-card .metric-list:not(.empty-state) {
-  max-height: min(380px, 42vh);
+  max-height: min(420px, 45vh);
   padding-right: 2px;
   overflow: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
 }
 
 .sidebar-mapping-card .empty-state {
-  padding: 10px;
+  min-height: 0;
+  padding: 9px 10px;
   border-radius: 12px;
   font-size: 12px;
   line-height: 1.35;
@@ -499,34 +531,59 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 
 .sidebar-mapping-card .metric-row,
 .sidebar-mapping-card .metric-row--multi {
+  position: relative;
   grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
+  gap: 7px;
   padding: 10px;
   border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+}
+
+.sidebar-mapping-card .metric-row:hover {
+  --hover-y: 0px;
+  transform: none;
+  box-shadow: none;
 }
 
 .sidebar-mapping-card .metric-columns {
   grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
+  gap: 7px;
 }
 
 .sidebar-mapping-card .metric-name {
   gap: 5px;
+  padding-right: 38px;
 }
 
 .sidebar-mapping-card .metric-name strong {
-  min-height: 36px;
-  padding: 8px 10px;
+  min-height: 34px;
+  padding: 8px 9px;
   border-radius: 12px;
+  background: rgba(204, 251, 241, 0.72);
   font-size: 12px;
+  line-height: 1.25;
 }
 
 .sidebar-mapping-card .icon-button {
-  justify-self: end;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
   border-radius: 12px;
-  font-size: 18px;
+  font-size: 16px;
+}
+
+.sidebar-mapping-card .metric-row--invalid {
+  border-color: #fecdd3;
+  background: #fff7f8;
+}
+
+.sidebar-mapping-card .metric-row--invalid .metric-name strong {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #9f1239;
 }
 
 .sidebar-panel {

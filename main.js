@@ -374,14 +374,14 @@
 
   function renderIdColumnSelect(period) {
     return (
-      '<label class="field"><span>Объект сравнения: ' +
+      '<label class="field"><span>Объект: ' +
       App.UI.escapeHtml(period.label) +
       '</span><select name="idColumn" data-period-id="' +
       period.id +
       '"' +
       (period.table ? "" : " disabled") +
       ">" +
-      buildColumnOptions(period.table, period.idColumn, "Колонка с объектом сравнения") +
+      buildColumnOptions(period.table, period.idColumn, "Выберите объект") +
       "</select></label>"
     );
   }
@@ -409,21 +409,21 @@
 
     if (!areAllPeriodsLoaded()) {
       dom.metricList.className = "metric-list empty-state";
-      dom.metricList.textContent = "Загрузите минимум два периода, чтобы добавить показатели";
+      dom.metricList.textContent = "Загрузите минимум два периода";
       dom.analyzeButton.disabled = true;
       return;
     }
 
     if (!areIdsReady()) {
       dom.metricList.className = "metric-list empty-state";
-      dom.metricList.textContent = "Выберите колонки с объектами сравнения для всех периодов";
+      dom.metricList.textContent = "Выберите объект для всех периодов";
       dom.analyzeButton.disabled = true;
       return;
     }
 
     if (!state.mapping.metrics.length) {
       dom.metricList.className = "metric-list empty-state";
-      dom.metricList.textContent = "Добавьте хотя бы один показатель";
+      dom.metricList.textContent = "Добавьте показатель";
       dom.analyzeButton.disabled = true;
       return;
     }
