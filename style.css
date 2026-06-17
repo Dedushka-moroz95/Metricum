@@ -20,7 +20,7 @@
   --sidebar-width: 300px;
   --sidebar-min-width: 250px;
   --sidebar-max-width: 420px;
-  --ease: 0.24s ease;
+  --ease: 0.16s ease;
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -63,8 +63,8 @@ body {
     Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.45;
   transition:
-    background-color 360ms ease,
-    color 240ms ease;
+    background-color 180ms ease,
+    color 160ms ease;
 }
 
 html.theme-dark body {
@@ -881,9 +881,9 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
   transition:
-    border-color 220ms ease,
-    box-shadow 220ms ease,
-    background-color 220ms ease;
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
 .workspace-section:hover {
@@ -1066,8 +1066,8 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   border-radius: var(--radius-lg);
   background: var(--card-soft);
   transition:
-    border-color 220ms ease,
-    background-color 220ms ease;
+    border-color 160ms ease,
+    background-color 160ms ease;
 }
 
 .period-card:hover {
@@ -1234,8 +1234,8 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
   transition:
     transform 220ms var(--ease-premium),
-    border-color 220ms ease,
-    box-shadow 220ms ease;
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .preview-panel:hover,
@@ -1580,9 +1580,9 @@ input:disabled {
   background: var(--card-soft);
   transition:
     transform 220ms var(--ease-premium),
-    border-color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .metric-row--multi {
@@ -1726,9 +1726,9 @@ input:disabled {
   background: rgba(255, 255, 255, 0.82);
   transition:
     transform 220ms var(--ease-premium),
-    border-color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
   animation: history-card-in 220ms var(--ease-premium) both;
 }
 
@@ -1950,9 +1950,9 @@ input:disabled {
   font-weight: 750;
   transition:
     transform 220ms var(--ease-premium),
-    border-color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .data-quality-inline:hover {
@@ -2143,9 +2143,9 @@ input:disabled {
   overflow: hidden;
   transition:
     transform 240ms var(--ease-premium),
-    border-color 220ms ease,
-    box-shadow 220ms ease,
-    background-color 220ms ease;
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
 .summary-card:first-child {
@@ -2213,8 +2213,8 @@ input:disabled {
   overflow: hidden;
   transition:
     transform 240ms var(--ease-premium),
-    border-color 220ms ease,
-    box-shadow 220ms ease;
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .chart-panel__header {
@@ -2263,9 +2263,9 @@ input:disabled {
   background: var(--card-soft);
   transition:
     transform 240ms var(--ease-premium),
-    border-color 220ms ease,
-    box-shadow 220ms ease,
-    background-color 220ms ease;
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
 .mover-card > h3 {
@@ -2680,9 +2680,9 @@ html.theme-dark .metric-row--invalid .metric-name strong {
   transition:
     opacity 420ms var(--ease-premium),
     transform 420ms var(--ease-premium),
-    border-color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease;
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
   transition-delay: calc(var(--motion-order, 0) * 36ms);
   will-change: opacity, transform;
 }
