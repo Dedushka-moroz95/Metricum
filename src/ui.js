@@ -282,8 +282,8 @@
 
     container.className = "results-panel";
     const visibleRows = comparison.rows.slice(0, 300);
-    const isSequential = comparison.comparisonMode === "sequential";
-    const showTimeline = comparison.periods.length > 2 && !isSequential;
+    const isPairwise = comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual";
+    const showTimeline = comparison.periods.length > 2 && !isPairwise;
     const metricHeaders = metrics.map(function (metric) {
       return buildMetricHeaders(metric, comparison.periods, showTimeline, comparison);
     }).join("");
@@ -323,7 +323,8 @@
   }
 
   function emptyMetricCells(periodCount, showTimeline, comparison) {
-    const count = comparison.comparisonMode === "sequential" ? comparison.comparisonPairs.length : showTimeline ? periodCount + 1 : 1;
+    const isPairwise = comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual";
+    const count = isPairwise ? comparison.comparisonPairs.length : showTimeline ? periodCount + 1 : 1;
     return Array.from({ length: count })
       .map(function () {
         return "<td>—</td>";
@@ -332,7 +333,7 @@
   }
 
   function buildMetricHeaders(metric, periods, showTimeline, comparison) {
-    if (comparison.comparisonMode === "sequential") {
+    if (comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual") {
       return comparison.comparisonPairs
         .map(function (pair) {
           return "<th>" + escapeHtml(metric.label) + '<span class="th-subtitle">' + escapeHtml(pair.label) + "</span></th>";
@@ -359,7 +360,7 @@
   }
 
   function buildMetricCells(result, periods, showTimeline, comparison) {
-    if (comparison.comparisonMode === "sequential") {
+    if (comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual") {
       return result.comparisons
         .map(function (item) {
           return resultCell(item);
@@ -502,7 +503,8 @@
     const totalCompared = Number(meta.totalCompared) || (record.analytics ? record.analytics.totalCompared : 0) || 0;
     const rowCount = Number(meta.rowCount) || (record.comparison && Array.isArray(record.comparison.rows) ? record.comparison.rows.length : 0);
     const changedCount = Number(meta.changedCount) || getHistoryChangedCount(record);
-    const modeLabel = meta.comparisonMode === "sequential" ? "последовательный" : "итоговый";
+    const modeLabel =
+      meta.comparisonMode === "manual" ? "ручной" : meta.comparisonMode === "sequential" ? "последовательный" : "итоговый";
     const pinnedLabel = record.pinned ? '<span class="history-pin">★ Закреплено</span>' : "";
     const pinnedClass = record.pinned ? " history-card--pinned" : "";
     const pinAction = record.pinned ? "Открепить" : "Закрепить";

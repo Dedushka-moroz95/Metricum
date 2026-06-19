@@ -452,6 +452,46 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   gap: 8px;
 }
 
+.comparison-pair-builder {
+  display: grid;
+  gap: 8px;
+}
+
+.comparison-pair-list {
+  display: grid;
+  gap: 8px;
+}
+
+.comparison-pair-row {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.86);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.comparison-pair-row__title {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.comparison-pair-row .icon-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  border-radius: 9px;
+  font-size: 16px;
+  line-height: 1;
+}
+
 .filter-status {
   min-height: 34px;
   padding: 8px 10px;
@@ -2661,6 +2701,7 @@ html.theme-dark .button-secondary,
 html.theme-dark .modal-close,
 html.theme-dark .file-drop,
 html.theme-dark .metric-row,
+html.theme-dark .comparison-pair-row,
 html.theme-dark .metric-name strong {
   border-color: var(--border);
   background: rgba(15, 20, 27, 0.86);

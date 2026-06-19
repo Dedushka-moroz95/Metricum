@@ -93,11 +93,11 @@
 
   function buildFlatRows(comparison, metrics) {
     const header = ["Объект"];
-    const isSequential = comparison.comparisonMode === "sequential";
-    const showTimeline = comparison.periods.length > 2 && !isSequential;
+    const isPairwise = comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual";
+    const showTimeline = comparison.periods.length > 2 && !isPairwise;
 
     metrics.forEach(function (metric) {
-      if (isSequential) {
+      if (isPairwise) {
         comparison.comparisonPairs.forEach(function (pair) {
           header.push(metric.label + " - " + pair.label);
         });
@@ -125,7 +125,7 @@
           return item.metricId === metric.id;
         });
 
-        if (isSequential) {
+        if (isPairwise) {
           comparison.comparisonPairs.forEach(function (pair) {
             const item = result
               ? result.comparisons.find(function (comparisonItem) {
@@ -162,13 +162,13 @@
   function buildExcelRows(comparison, metrics) {
     const header = ["Объект"];
     const columnFormats = ["text"];
-    const isSequential = comparison.comparisonMode === "sequential";
-    const showTimeline = comparison.periods.length > 2 && !isSequential;
+    const isPairwise = comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual";
+    const showTimeline = comparison.periods.length > 2 && !isPairwise;
 
     metrics.forEach(function (metric) {
       const metricFormat = getMetricValueFormat(comparison, metric.id);
 
-      if (isSequential) {
+      if (isPairwise) {
         comparison.comparisonPairs.forEach(function (pair) {
           header.push(metric.label + " - " + pair.label);
           columnFormats.push("text");
@@ -202,7 +202,7 @@
           return item.metricId === metric.id;
         });
 
-        if (isSequential) {
+        if (isPairwise) {
           comparison.comparisonPairs.forEach(function (pair) {
             const item = result
               ? result.comparisons.find(function (comparisonItem) {
@@ -422,7 +422,7 @@
   }
 
   function buildChartRows(comparison, metric) {
-    const isSequential = comparison.comparisonMode === "sequential";
+    const isPairwise = comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual";
 
     return comparison.rows
       .flatMap(function (row) {
@@ -434,7 +434,7 @@
           return [];
         }
 
-        if (isSequential) {
+        if (isPairwise) {
           return result.comparisons
             .filter(function (item) {
               return Number.isFinite(item.delta);

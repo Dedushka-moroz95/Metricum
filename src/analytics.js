@@ -44,7 +44,7 @@
             return {
               key: row.key,
               label: row.label,
-              comparisonLabel: comparisonMode === "sequential" ? comparison.label : "",
+              comparisonLabel: comparisonMode === "sequential" || comparisonMode === "manual" ? comparison.label : "",
               valueA: comparison.valueA,
               valueB: comparison.valueB,
               delta: comparison.delta,

@@ -25,6 +25,7 @@
     dom.periodList = document.getElementById("periodList");
     dom.addPeriodButton = document.getElementById("addPeriodButton");
     dom.comparisonModeSelect = document.getElementById("comparisonModeSelect");
+    dom.comparisonPairBuilder = document.getElementById("comparisonPairBuilder");
     dom.previewList = document.getElementById("previewList");
     dom.mapperControls = document.getElementById("mapperControls");
     dom.addMetricButton = document.getElementById("addMetricButton");
@@ -104,9 +105,12 @@
     dom.addPeriodButton.addEventListener("click", addPeriod);
     dom.comparisonModeSelect.addEventListener("change", function () {
       state.comparisonMode = dom.comparisonModeSelect.value;
+      ensureManualComparisonPairs();
       clearAnalysis();
       renderAll();
     });
+    dom.comparisonPairBuilder.addEventListener("change", handleComparisonPairChange);
+    dom.comparisonPairBuilder.addEventListener("click", handleComparisonPairClick);
     dom.periodList.addEventListener("change", handlePeriodChange);
     dom.periodList.addEventListener("input", handlePeriodInput);
     dom.periodList.addEventListener("click", handlePeriodClick);
@@ -155,6 +159,181 @@
     state.periods.push(App.createPeriod(state.periods.length));
     clearAnalysis();
     renderAll();
+  }
+
+  function renderComparisonPairBuilder() {
+    if (!dom.comparisonPairBuilder) {
+      return;
+    }
+
+    if (state.comparisonMode !== "manual") {
+      dom.comparisonPairBuilder.hidden = true;
+      dom.comparisonPairBuilder.innerHTML = "";
+      return;
+    }
+
+    const periods = getAvailableComparisonPeriods();
+    ensureManualComparisonPairs(periods);
+    dom.comparisonPairBuilder.hidden = false;
+
+    if (periods.length < 2) {
+      dom.comparisonPairBuilder.className = "comparison-pair-builder empty-state";
+      dom.comparisonPairBuilder.textContent = isSingleFileSourceMode()
+        ? "Выберите колонку периода, чтобы собрать пары сравнения"
+        : "Загрузите минимум два периода";
+      return;
+    }
+
+    dom.comparisonPairBuilder.className = "comparison-pair-builder";
+    dom.comparisonPairBuilder.innerHTML =
+      '<div class="comparison-pair-list">' +
+      state.manualComparisonPairs.map(function (pair, index) {
+        return renderComparisonPairRow(pair, index, periods);
+      }).join("") +
+      "</div>" +
+      '<button class="button button-secondary" type="button" data-action="add-comparison-pair">+ Пара</button>';
+  }
+
+  function renderComparisonPairRow(pair, index, periods) {
+    const removeButton =
+      state.manualComparisonPairs.length > 1
+        ? '<button class="icon-button" type="button" data-action="remove-comparison-pair" data-pair-id="' +
+          pair.id +
+          '" title="Удалить пару" aria-label="Удалить пару">×</button>'
+        : "";
+
+    return (
+      '<div class="comparison-pair-row" data-pair-id="' +
+      pair.id +
+      '">' +
+      '<div class="comparison-pair-row__title">Пара ' +
+      (index + 1) +
+      "</div>" +
+      '<label class="field sidebar-field"><span>Базовый</span><select name="comparisonPairFrom" data-pair-id="' +
+      pair.id +
+      '">' +
+      buildPeriodOptions(periods, pair.fromPeriodId, "С чем сравниваем") +
+      "</select></label>" +
+      '<label class="field sidebar-field"><span>Сравнить</span><select name="comparisonPairTo" data-pair-id="' +
+      pair.id +
+      '">' +
+      buildPeriodOptions(periods, pair.toPeriodId, "Что сравниваем") +
+      "</select></label>" +
+      removeButton +
+      "</div>"
+    );
+  }
+
+  function buildPeriodOptions(periods, selectedValue, placeholder) {
+    const options = ['<option value="">' + App.UI.escapeHtml(placeholder) + "</option>"];
+
+    periods.forEach(function (period) {
+      options.push(
+        '<option value="' +
+          period.id +
+          '" ' +
+          selected(selectedValue, period.id) +
+          ">" +
+          App.UI.escapeHtml(period.label) +
+          "</option>"
+      );
+    });
+
+    return options.join("");
+  }
+
+  function handleComparisonPairChange(event) {
+    if (event.target.name !== "comparisonPairFrom" && event.target.name !== "comparisonPairTo") {
+      return;
+    }
+
+    const pair = findManualComparisonPair(event.target.dataset.pairId);
+
+    if (!pair) {
+      return;
+    }
+
+    if (event.target.name === "comparisonPairFrom") {
+      pair.fromPeriodId = event.target.value;
+    } else {
+      pair.toPeriodId = event.target.value;
+    }
+
+    clearAnalysis();
+    renderAll();
+  }
+
+  function handleComparisonPairClick(event) {
+    const actionButton = event.target.closest("[data-action]");
+
+    if (!actionButton) {
+      return;
+    }
+
+    if (actionButton.dataset.action === "add-comparison-pair") {
+      addManualComparisonPair();
+      clearAnalysis();
+      renderAll();
+      return;
+    }
+
+    if (actionButton.dataset.action === "remove-comparison-pair") {
+      state.manualComparisonPairs = state.manualComparisonPairs.filter(function (pair) {
+        return pair.id !== actionButton.dataset.pairId;
+      });
+      ensureManualComparisonPairs();
+      clearAnalysis();
+      renderAll();
+    }
+  }
+
+  function addManualComparisonPair() {
+    const periods = getAvailableComparisonPeriods();
+
+    if (periods.length < 2) {
+      return;
+    }
+
+    state.manualComparisonPairs.push(createManualComparisonPair(periods[0].id, periods[periods.length - 1].id));
+  }
+
+  function ensureManualComparisonPairs(periods) {
+    if (!Array.isArray(state.manualComparisonPairs)) {
+      state.manualComparisonPairs = [];
+    }
+
+    if (state.comparisonMode !== "manual") {
+      return;
+    }
+
+    const availablePeriods = periods || getAvailableComparisonPeriods();
+    const availableIds = new Set(
+      availablePeriods.map(function (period) {
+        return period.id;
+      })
+    );
+
+    state.manualComparisonPairs = state.manualComparisonPairs.filter(function (pair) {
+      return availableIds.has(pair.fromPeriodId) && availableIds.has(pair.toPeriodId);
+    });
+
+    if (!state.manualComparisonPairs.length && availablePeriods.length >= 2) {
+      state.manualComparisonPairs.push(createManualComparisonPair(availablePeriods[0].id, availablePeriods[availablePeriods.length - 1].id));
+    }
+  }
+
+  function createManualComparisonPair(fromPeriodId, toPeriodId) {
+    return {
+      id: "comparison_pair_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+      fromPeriodId: fromPeriodId || "",
+      toPeriodId: toPeriodId || "",
+    };
+  }
+
+  function findManualComparisonPair(pairId) {
+    return state.manualComparisonPairs.find(function (pair) {
+      return pair.id === pairId;
+    });
   }
 
   function handlePeriodInput(event) {
@@ -354,6 +533,7 @@
     dom.periodSourceModeSelect.value = state.periodSourceMode || "multiFile";
     dom.comparisonModeSelect.value = state.comparisonMode;
     dom.addPeriodButton.disabled = isSingleFileSourceMode();
+    renderComparisonPairBuilder();
     renderPeriodUploads();
     renderPreviews();
     renderColumnMapping();
@@ -610,20 +790,26 @@
       return;
     }
 
-    if (areAllPeriodsLoaded()) {
+    const comparisonPeriods = state.comparisonMode === "manual" ? getComparisonPeriods() : state.periods;
+    const periodsReady = state.comparisonMode === "manual" ? arePeriodsReady(comparisonPeriods) : areAllPeriodsLoaded();
+    const idsReady = state.comparisonMode === "manual" ? periodsReady : areIdsReady();
+
+    if (periodsReady) {
       syncMetricLabels();
     }
 
-    if (!areAllPeriodsLoaded()) {
+    if (!periodsReady) {
       dom.metricList.className = "metric-list empty-state";
-      dom.metricList.textContent = "Загрузите минимум два периода";
+      dom.metricList.textContent =
+        state.comparisonMode === "manual" ? "Выберите пару загруженных периодов" : "Загрузите минимум два периода";
       dom.analyzeButton.disabled = true;
       return;
     }
 
-    if (!areIdsReady()) {
+    if (!idsReady) {
       dom.metricList.className = "metric-list empty-state";
-      dom.metricList.textContent = "Выберите объект для всех периодов";
+      dom.metricList.textContent =
+        state.comparisonMode === "manual" ? "Выберите объект для периодов в паре" : "Выберите объект для всех периодов";
       dom.analyzeButton.disabled = true;
       return;
     }
@@ -886,16 +1072,81 @@
   }
 
   function getComparisonPeriods() {
+    const periods = getSourceComparisonPeriods();
+
+    if (state.comparisonMode !== "manual") {
+      return periods;
+    }
+
+    const usedIds = new Set();
+    getValidManualComparisonPairs(periods).forEach(function (pair) {
+      usedIds.add(pair.fromPeriodId);
+      usedIds.add(pair.toPeriodId);
+    });
+
+    return periods.filter(function (period) {
+      return usedIds.has(period.id);
+    });
+  }
+
+  function getAvailableComparisonPeriods() {
+    return getSourceComparisonPeriods().filter(function (period) {
+      return Boolean(period.table);
+    });
+  }
+
+  function getSourceComparisonPeriods() {
     if (!isSingleFileSourceMode()) {
       return state.periods;
     }
 
-    const singleFile = ensureSingleFileSource();
-
     return getSingleFileVirtualPeriods().map(function (period) {
       return Object.assign({}, period, {
-        idColumn: singleFile.idColumn,
+        idColumn: ensureSingleFileSource().idColumn,
       });
+    });
+  }
+
+  function getManualComparisonPairsForComparator(periods) {
+    if (state.comparisonMode !== "manual") {
+      return null;
+    }
+
+    const available = periods || getComparisonPeriods();
+    return getValidManualComparisonPairs(available).map(function (pair) {
+      const fromPeriod = available.find(function (period) {
+        return period.id === pair.fromPeriodId;
+      });
+      const toPeriod = available.find(function (period) {
+        return period.id === pair.toPeriodId;
+      });
+
+      return {
+        fromPeriodId: pair.fromPeriodId,
+        fromPeriodLabel: fromPeriod ? fromPeriod.label : "",
+        toPeriodId: pair.toPeriodId,
+        toPeriodLabel: toPeriod ? toPeriod.label : "",
+        label: (toPeriod ? toPeriod.label : "") + " - " + (fromPeriod ? fromPeriod.label : ""),
+      };
+    });
+  }
+
+  function getValidManualComparisonPairs(periods) {
+    const availablePeriods = periods || getAvailableComparisonPeriods();
+    const availableIds = new Set(
+      availablePeriods.map(function (period) {
+        return period.id;
+      })
+    );
+
+    return (state.manualComparisonPairs || []).filter(function (pair) {
+      return (
+        pair.fromPeriodId &&
+        pair.toPeriodId &&
+        pair.fromPeriodId !== pair.toPeriodId &&
+        availableIds.has(pair.fromPeriodId) &&
+        availableIds.has(pair.toPeriodId)
+      );
     });
   }
 
@@ -947,7 +1198,8 @@
         singleFile.idColumn &&
         singleFile.periodColumn &&
         singleFile.idColumn !== singleFile.periodColumn &&
-        getSingleFileVirtualPeriods().length >= 2
+        getSingleFileVirtualPeriods().length >= 2 &&
+        areComparisonPairsReady()
     );
   }
 
@@ -966,16 +1218,36 @@
       return areSingleFileMetricsReady();
     }
 
+    const comparisonPeriods = getComparisonPeriods();
+
     return Boolean(
-      areIdsReady() &&
+      arePeriodsReady(comparisonPeriods) &&
         state.mapping.metrics.length &&
         state.mapping.metrics.every(function (metric) {
-          return state.periods.every(function (period) {
+          return comparisonPeriods.every(function (period) {
             return Boolean(metric.columns[period.id]);
           });
         }) &&
         !getMetricSelectionIssues().length
     );
+  }
+
+  function arePeriodsReady(periods) {
+    return (
+      periods.length >= 2 &&
+      periods.every(function (period) {
+        return Boolean(period.table && period.idColumn);
+      }) &&
+      areComparisonPairsReady(periods)
+    );
+  }
+
+  function areComparisonPairsReady(periods) {
+    if (state.comparisonMode !== "manual") {
+      return true;
+    }
+
+    return getValidManualComparisonPairs(periods).length > 0;
   }
 
   function analyze() {
@@ -1003,6 +1275,7 @@
       periods: comparisonPeriods,
       metrics: comparisonMetrics,
       comparisonMode: state.comparisonMode,
+      comparisonPairs: getManualComparisonPairsForComparator(comparisonPeriods),
     });
 
     state.analytics = App.Analytics.buildAnalytics(state.comparison, state.mapping.metrics);
@@ -1145,6 +1418,7 @@
         periodSourceMode: state.periodSourceMode || "multiFile",
         comparisonMode: state.comparisonMode,
         selectedChartMetricId: state.selectedChartMetricId,
+        manualComparisonPairs: cloneJson(state.manualComparisonPairs || []),
         singleFile:
           state.periodSourceMode === "singleFile"
             ? {
@@ -1297,6 +1571,7 @@
     state.messages = [];
     state.periodSourceMode = record.settings.periodSourceMode || record.meta.periodSourceMode || "multiFile";
     state.comparisonMode = record.settings.comparisonMode || record.meta.comparisonMode || record.comparison.comparisonMode || "endpoint";
+    state.manualComparisonPairs = cloneJson(record.settings.manualComparisonPairs || []);
     state.comparison = cloneJson(record.comparison);
     state.analytics = cloneJson(record.analytics);
     state.mapping.metrics = cloneJson(record.metrics || []);
@@ -1846,6 +2121,7 @@
         appendComparisonWarnings(warnings);
       }
 
+      warnings.push.apply(warnings, getComparisonPairWarnings());
       return warnings;
     }
 
@@ -1856,6 +2132,7 @@
     });
 
     warnings.push.apply(warnings, compareHeadersWarning());
+    warnings.push.apply(warnings, getComparisonPairWarnings());
     warnings.push.apply(warnings, getMetricSelectionWarnings());
 
     if (state.comparison) {
@@ -1874,28 +2151,68 @@
     });
   }
 
+  function getComparisonPairWarnings() {
+    if (state.comparisonMode !== "manual") {
+      return [];
+    }
+
+    const periods = getAvailableComparisonPeriods();
+
+    if (periods.length < 2) {
+      return [];
+    }
+
+    const hasSamePeriods = (state.manualComparisonPairs || []).some(function (pair) {
+      return pair.fromPeriodId && pair.toPeriodId && pair.fromPeriodId === pair.toPeriodId;
+    });
+
+    if (hasSamePeriods) {
+      return [
+        {
+          type: "error",
+          message: "В ручном сравнении базовый период и период сравнения должны отличаться.",
+        },
+      ];
+    }
+
+    if (!getValidManualComparisonPairs(periods).length) {
+      return [
+        {
+          type: "neutral",
+          message: "Выберите хотя бы одну пару периодов для ручного сравнения.",
+        },
+      ];
+    }
+
+    return [];
+  }
+
   function getMetricSelectionIssues() {
     if (isSingleFileSourceMode()) {
       return [];
     }
 
-    if (!areIdsReady() || !state.mapping.metrics.length) {
+    const comparisonPeriods = getComparisonPeriods();
+
+    if (!arePeriodsReady(comparisonPeriods) || !state.mapping.metrics.length) {
       return [];
     }
 
     return state.mapping.metrics
       .map(function (metric, index) {
-        return getMetricSelectionIssue(metric, index);
+        return getMetricSelectionIssue(metric, index, comparisonPeriods);
       })
       .filter(Boolean);
   }
 
-  function getMetricSelectionIssue(metric, index) {
-    if (!areAllPeriodsLoaded()) {
+  function getMetricSelectionIssue(metric, index, periods) {
+    const comparisonPeriods = periods || getComparisonPeriods();
+
+    if (!arePeriodsReady(comparisonPeriods)) {
       return null;
     }
 
-    const selections = state.periods.map(function (period) {
+    const selections = comparisonPeriods.map(function (period) {
       const columnName = getColumnName(period, metric.columns[period.id]);
 
       return {

@@ -19,7 +19,7 @@
 
     const firstPeriod = comparison.periods[0];
     const lastPeriod = comparison.periods[comparison.periods.length - 1];
-    const isSequential = comparison.comparisonMode === "sequential";
+    const isPairwise = comparison.comparisonMode === "sequential" || comparison.comparisonMode === "manual";
     const rows = comparison.rows
       .flatMap(function (row) {
         const result = row.metrics.find(function (item) {
@@ -30,7 +30,7 @@
           return [];
         }
 
-        if (isSequential) {
+        if (isPairwise) {
           return result.comparisons
             .filter(function (item) {
               return Number.isFinite(item.delta);
@@ -80,7 +80,7 @@
         }),
         datasets: [
           {
-            label: metric.label + " " + (isSequential ? "последовательная динамика" : lastPeriod.label + " - " + firstPeriod.label),
+            label: metric.label + " " + (isPairwise ? "динамика по выбранным парам" : lastPeriod.label + " - " + firstPeriod.label),
             data: waitForViewport ? targetData.map(function () { return 0; }) : targetData,
             backgroundColor: function (context) {
               const chart = context.chart;

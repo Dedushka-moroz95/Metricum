@@ -6,7 +6,7 @@
     const periods = options.periods;
     const metrics = options.metrics;
     const comparisonMode = options.comparisonMode || "endpoint";
-    const comparisonPairs = buildComparisonPairs(periods, comparisonMode);
+    const comparisonPairs = buildComparisonPairs(periods, comparisonMode, options.comparisonPairs);
     const metricProfiles = buildMetricProfiles(periods, metrics);
     const periodIndexes = periods.map(function (period) {
       return {
@@ -49,7 +49,7 @@
       });
 
       const metricResults = metrics.map(function (metric) {
-        return buildMetricResult(metric, periods, records, key, label, invalidValues, comparisonMode, metricProfiles.get(metric.id));
+        return buildMetricResult(metric, periods, records, key, label, invalidValues, comparisonMode, comparisonPairs, metricProfiles.get(metric.id));
       });
 
       rows.push({
@@ -95,7 +95,30 @@
     };
   }
 
-  function buildComparisonPairs(periods, comparisonMode) {
+  function buildComparisonPairs(periods, comparisonMode, customPairs) {
+    if (comparisonMode === "manual" && Array.isArray(customPairs) && customPairs.length) {
+      return customPairs.map(function (pair) {
+        const fromPeriod = periods.find(function (period) {
+          return period.id === pair.fromPeriodId;
+        });
+        const toPeriod = periods.find(function (period) {
+          return period.id === pair.toPeriodId;
+        });
+
+        return {
+          fromPeriodId: pair.fromPeriodId,
+          fromPeriodLabel: pair.fromPeriodLabel || (fromPeriod ? fromPeriod.label : ""),
+          toPeriodId: pair.toPeriodId,
+          toPeriodLabel: pair.toPeriodLabel || (toPeriod ? toPeriod.label : ""),
+          label:
+            pair.label ||
+            ((pair.toPeriodLabel || (toPeriod ? toPeriod.label : "")) +
+              " - " +
+              (pair.fromPeriodLabel || (fromPeriod ? fromPeriod.label : ""))),
+        };
+      });
+    }
+
     if (comparisonMode === "sequential") {
       return periods.slice(1).map(function (period, index) {
         const previous = periods[index];
@@ -173,7 +196,7 @@
     };
   }
 
-  function buildMetricResult(metric, periods, records, key, label, invalidValues, comparisonMode, metricProfile) {
+  function buildMetricResult(metric, periods, records, key, label, invalidValues, comparisonMode, comparisonPairs, metricProfile) {
     const profile = metricProfile || { valueFormat: "number", scale: 1 };
     const periodValues = periods.map(function (period, index) {
       const record = records[index];
@@ -216,7 +239,7 @@
         valueFormat: profile.valueFormat,
       };
     });
-    const comparisons = buildMetricComparisons(periodValues, comparisonMode, profile.valueFormat);
+    const comparisons = buildMetricComparisons(periodValues, comparisonMode, profile.valueFormat, comparisonPairs);
     const primaryComparison = comparisons[comparisons.length - 1] || null;
 
     return {
@@ -235,7 +258,22 @@
     };
   }
 
-  function buildMetricComparisons(periodValues, comparisonMode, valueFormat) {
+  function buildMetricComparisons(periodValues, comparisonMode, valueFormat, comparisonPairs) {
+    if (comparisonMode === "manual") {
+      return (comparisonPairs || [])
+        .map(function (pair) {
+          const fromValue = periodValues.find(function (item) {
+            return item.periodId === pair.fromPeriodId;
+          });
+          const toValue = periodValues.find(function (item) {
+            return item.periodId === pair.toPeriodId;
+          });
+
+          return buildSingleComparison(fromValue, toValue, valueFormat, pair.label);
+        })
+        .filter(Boolean);
+    }
+
     if (comparisonMode === "sequential") {
       return periodValues.slice(1).map(function (current, index) {
         return buildSingleComparison(periodValues[index], current, valueFormat);
@@ -245,7 +283,7 @@
     return [buildSingleComparison(periodValues[0], periodValues[periodValues.length - 1], valueFormat)];
   }
 
-  function buildSingleComparison(fromValue, toValue, valueFormat) {
+  function buildSingleComparison(fromValue, toValue, valueFormat, label) {
     const hasNumbers = fromValue && toValue && fromValue.isNumeric && toValue.isNumeric;
     const delta = hasNumbers ? toValue.value - fromValue.value : null;
     const deltaPercent = hasNumbers ? Normalizers.calculatePercentChange(fromValue.value, toValue.value) : null;
@@ -255,7 +293,7 @@
       fromPeriodLabel: fromValue ? fromValue.periodLabel : "",
       toPeriodId: toValue ? toValue.periodId : "",
       toPeriodLabel: toValue ? toValue.periodLabel : "",
-      label: (toValue ? toValue.periodLabel : "") + " - " + (fromValue ? fromValue.periodLabel : ""),
+      label: label || (toValue ? toValue.periodLabel : "") + " - " + (fromValue ? fromValue.periodLabel : ""),
       valueA: fromValue ? fromValue.value : null,
       valueB: toValue ? toValue.value : null,
       rawA: fromValue ? fromValue.raw : "",

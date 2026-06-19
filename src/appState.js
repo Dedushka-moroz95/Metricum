@@ -7,6 +7,7 @@
       singleFile: createSingleFileSource(),
       periods: [createPeriod(0), createPeriod(1)],
       comparisonMode: "endpoint",
+      manualComparisonPairs: [],
       mapping: {
         metrics: [],
       },
