@@ -413,18 +413,19 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 
 .sidebar-control-card select,
 .sidebar-control-card input[type="text"] {
-  min-height: 42px;
-  padding: 9px 36px 9px 12px;
-  border-radius: 14px;
-  font-size: 13px;
+  min-height: 36px;
+  padding: 7px 32px 7px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 760;
 }
 
 .sidebar-control-card .button {
   width: 100%;
-  min-height: 42px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  font-size: 14px;
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
 }
 
 .sidebar-actions {
@@ -435,7 +436,7 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 }
 
 .sidebar-actions .button {
-  min-height: 40px;
+  min-height: 36px;
 }
 
 .sidebar-control-card .data-quality-inline {
@@ -482,11 +483,11 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 
 .sidebar-upload-card .period-card {
   position: relative;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
-  padding: 8px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.74);
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
   overflow: hidden;
 }
 
@@ -513,12 +514,12 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 }
 
 .sidebar-upload-card .period-name-field input {
-  min-height: 30px;
+  min-height: 36px;
   min-width: 0;
-  padding: 5px 8px;
-  border-radius: 10px;
+  padding: 7px 10px;
+  border-radius: 12px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 760;
 }
 
 .sidebar-upload-card .file-drop {
@@ -526,10 +527,10 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   min-width: 0;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   min-height: 0;
-  padding: 7px 8px;
-  border-radius: 11px;
+  padding: 7px 10px;
+  border-radius: 12px;
   background:
     linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)) padding-box,
     linear-gradient(135deg, rgba(15, 118, 110, 0.34), rgba(226, 232, 240, 0.84)) border-box;
@@ -548,8 +549,9 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
   grid-row: 1;
   min-width: 0;
   overflow: hidden;
-  font-size: 11px;
-  line-height: 1.2;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -557,11 +559,11 @@ body.is-sidebar-resizing .sidebar-resize-handle::before {
 .sidebar-upload-card .file-drop__button {
   grid-column: 2;
   grid-row: 1;
-  min-height: 26px;
-  padding: 5px 8px;
-  border-radius: 9px;
-  font-size: 11px;
-  max-width: 74px;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 11px;
+  font-size: 12px;
+  max-width: 86px;
   overflow: hidden;
   text-overflow: ellipsis;
   box-shadow: none;
@@ -2646,6 +2648,23 @@ html.theme-dark input[type="text"]:focus,
 html.theme-dark .file-drop:hover {
   border-color: rgba(20, 184, 166, 0.42);
   background: rgba(23, 29, 38, 0.96);
+}
+
+html.theme-dark .sidebar-upload-card .period-card {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 20, 27, 0.86);
+}
+
+html.theme-dark .sidebar-upload-card .period-name-field input {
+  border-color: var(--border);
+  background: rgba(15, 20, 27, 0.86);
+  color: var(--text);
+}
+
+html.theme-dark .sidebar-upload-card .file-drop,
+html.theme-dark .sidebar-upload-card .file-drop:hover {
+  border-color: var(--border);
+  background: rgba(15, 20, 27, 0.86);
 }
 
 html.theme-dark .file-drop,
