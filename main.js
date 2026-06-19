@@ -40,6 +40,7 @@
     dom.globalObjectSearch = document.getElementById("globalObjectSearch");
     dom.globalDepartmentSearch = document.getElementById("globalDepartmentSearch");
     dom.globalFilterStatus = document.getElementById("globalFilterStatus");
+    dom.applyGlobalFiltersButton = document.getElementById("applyGlobalFiltersButton");
     dom.resetGlobalFiltersButton = document.getElementById("resetGlobalFiltersButton");
     dom.clearHistoryButton = document.getElementById("clearHistoryButton");
     dom.historyList = document.getElementById("historyList");
@@ -117,11 +118,7 @@
     dom.exportCsvButton.addEventListener("click", exportCsv);
     dom.exportExcelButton.addEventListener("click", exportExcel);
     dom.saveAnalysisButton.addEventListener("click", openSaveAnalysisModal);
-    dom.globalImpactFilter.addEventListener("change", handleGlobalFilterChange);
-    dom.globalDeltaMinFilter.addEventListener("input", handleGlobalFilterChange);
-    dom.globalDeltaMaxFilter.addEventListener("input", handleGlobalFilterChange);
-    dom.globalObjectSearch.addEventListener("input", handleGlobalFilterChange);
-    dom.globalDepartmentSearch.addEventListener("input", handleGlobalFilterChange);
+    dom.applyGlobalFiltersButton.addEventListener("click", applyGlobalFilters);
     dom.resetGlobalFiltersButton.addEventListener("click", resetGlobalFilters);
     dom.clearHistoryButton.addEventListener("click", clearHistory);
     dom.historyList.addEventListener("click", handleHistoryClick);
@@ -1515,7 +1512,7 @@
     });
   }
 
-  function handleGlobalFilterChange() {
+  function applyGlobalFilters() {
     ensureGlobalFilters();
     state.globalFilters.impact = dom.globalImpactFilter.value;
     state.globalFilters.deltaMin = dom.globalDeltaMinFilter.value;
@@ -1692,6 +1689,7 @@
       control.disabled = !hasComparison;
     });
 
+    dom.applyGlobalFiltersButton.disabled = !hasComparison;
     dom.resetGlobalFiltersButton.disabled = !hasComparison || !hasActiveFilters;
 
     if (!hasComparison) {
