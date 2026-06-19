@@ -234,6 +234,8 @@
       file: null,
       table: null,
       periodColumn: "",
+      virtualPeriods: [],
+      warnings: [],
       loading: false,
     };
     state.messages = [];
@@ -316,6 +318,8 @@
       singleFile.file = file;
       singleFile.table = table;
       singleFile.periodColumn = "";
+      singleFile.virtualPeriods = [];
+      singleFile.warnings = [];
       singleFile.loading = false;
       clearAnalysis();
       renderAll();
@@ -324,6 +328,8 @@
       singleFile.file = file;
       singleFile.table = null;
       singleFile.periodColumn = "";
+      singleFile.virtualPeriods = [];
+      singleFile.warnings = [];
       state.messages.push({
         type: "error",
         message: error.message,
@@ -461,10 +467,23 @@
     dom.previewList.innerHTML = "";
 
     if (isSingleFileSourceMode()) {
+      const singleFile = ensureSingleFileSource();
+      const virtualPeriods = getSingleFileVirtualPeriods();
+
+      if (virtualPeriods.length) {
+        virtualPeriods.forEach(function (period) {
+          const panel = document.createElement("div");
+          panel.className = "preview-panel empty-state";
+          dom.previewList.appendChild(panel);
+          App.UI.renderPreview(panel, period.table, "Нет строк: " + period.label);
+        });
+        return;
+      }
+
       const panel = document.createElement("div");
       panel.className = "preview-panel empty-state";
       dom.previewList.appendChild(panel);
-      App.UI.renderPreview(panel, ensureSingleFileSource().table, "Загрузите один файл");
+      App.UI.renderPreview(panel, singleFile.table, "Загрузите один файл");
       return;
     }
 
@@ -520,6 +539,10 @@
     }
 
     const values = getSingleFilePeriodValues();
+    const virtualPeriods = getSingleFileVirtualPeriods();
+    const rowCount = virtualPeriods.reduce(function (sum, period) {
+      return sum + period.table.rows.length;
+    }, 0);
     const preview = values.slice(0, 4).join(", ");
     const rest = values.length > 4 ? " +" + (values.length - 4) : "";
 
@@ -527,7 +550,7 @@
       '<div class="single-file-mode-note"><strong>Найдено периодов: ' +
       values.length +
       "</strong><span>" +
-      App.UI.escapeHtml(preview + rest) +
+      App.UI.escapeHtml("Строк: " + rowCount + ". " + preview + rest) +
       "</span></div>"
     );
   }
@@ -549,6 +572,7 @@
   function handleMappingChange(event) {
     if (event.target.name === "singlePeriodColumn") {
       ensureSingleFileSource().periodColumn = event.target.value;
+      rebuildSingleFileVirtualPeriods();
       clearAnalysis();
       renderAll();
       return;
@@ -1221,6 +1245,8 @@
         file: null,
         table: null,
         periodColumn: "",
+        virtualPeriods: [],
+        warnings: [],
         loading: false,
       };
     }
@@ -1228,35 +1254,44 @@
     return state.singleFile;
   }
 
-  function getSingleFilePeriodValues() {
+  function rebuildSingleFileVirtualPeriods() {
+    const singleFile = ensureSingleFileSource();
+
+    if (!singleFile.table || !singleFile.periodColumn || !App.PeriodBuilder) {
+      singleFile.virtualPeriods = [];
+      singleFile.warnings = [];
+      return [];
+    }
+
+    const result = App.PeriodBuilder.buildVirtualPeriods({
+      table: singleFile.table,
+      periodColumn: singleFile.periodColumn,
+    });
+
+    singleFile.virtualPeriods = result.periods;
+    singleFile.warnings = result.warnings;
+
+    return singleFile.virtualPeriods;
+  }
+
+  function getSingleFileVirtualPeriods() {
     const singleFile = ensureSingleFileSource();
 
     if (!singleFile.table || !singleFile.periodColumn) {
       return [];
     }
 
-    const seen = new Set();
-    const values = [];
+    if (!Array.isArray(singleFile.virtualPeriods) || !singleFile.virtualPeriods.length) {
+      return rebuildSingleFileVirtualPeriods();
+    }
 
-    singleFile.table.rows.forEach(function (row) {
-      const value = row.values[singleFile.periodColumn];
+    return singleFile.virtualPeriods;
+  }
 
-      if (App.Normalizers.isEmptyValue(value)) {
-        return;
-      }
-
-      const label = App.Normalizers.toText(value).trim().replace(/\s+/g, " ");
-      const key = App.Normalizers.normalizeKey(label);
-
-      if (!key || seen.has(key)) {
-        return;
-      }
-
-      seen.add(key);
-      values.push(label);
+  function getSingleFilePeriodValues() {
+    return getSingleFileVirtualPeriods().map(function (period) {
+      return period.label;
     });
-
-    return values;
   }
 
   function hasAnyLoadedPeriod() {
@@ -1555,6 +1590,7 @@
         });
       } else {
         const periodValues = getSingleFilePeriodValues();
+        warnings.push.apply(warnings, singleFile.warnings || []);
         warnings.push({
           type: periodValues.length >= 2 ? "neutral" : "warn",
           message:

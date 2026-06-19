@@ -33,6 +33,8 @@
       file: null,
       table: null,
       periodColumn: "",
+      virtualPeriods: [],
+      warnings: [],
       loading: false,
     };
   }
