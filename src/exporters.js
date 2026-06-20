@@ -37,7 +37,7 @@
     }
 
     const workbook = new global.ExcelJS.Workbook();
-    workbook.creator = "Operational Analytics";
+    workbook.creator = "Metricum";
     workbook.created = new Date();
 
     fillDashboardSheet(workbook.addWorksheet(SHEET_NAMES.dashboard), analytics, metrics);
