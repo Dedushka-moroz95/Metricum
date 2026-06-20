@@ -7,6 +7,7 @@
   let historyRecords = [];
   let hasUnsavedAnalysis = false;
   let historySearchQuery = "";
+  let objectSuggestionIndex = -1;
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -39,6 +40,7 @@
     dom.globalDeltaMinFilter = document.getElementById("globalDeltaMinFilter");
     dom.globalDeltaMaxFilter = document.getElementById("globalDeltaMaxFilter");
     dom.globalObjectSearch = document.getElementById("globalObjectSearch");
+    dom.globalObjectSuggestions = document.getElementById("globalObjectSuggestions");
     dom.globalDepartmentSearch = document.getElementById("globalDepartmentSearch");
     dom.globalFilterStatus = document.getElementById("globalFilterStatus");
     dom.applyGlobalFiltersButton = document.getElementById("applyGlobalFiltersButton");
@@ -122,6 +124,10 @@
     dom.exportCsvButton.addEventListener("click", exportCsv);
     dom.exportExcelButton.addEventListener("click", exportExcel);
     dom.saveAnalysisButton.addEventListener("click", openSaveAnalysisModal);
+    dom.globalObjectSearch.addEventListener("input", renderObjectSuggestions);
+    dom.globalObjectSearch.addEventListener("focus", renderObjectSuggestions);
+    dom.globalObjectSearch.addEventListener("keydown", handleObjectSuggestionKeydown);
+    dom.globalObjectSuggestions.addEventListener("mousedown", handleObjectSuggestionSelect);
     dom.applyGlobalFiltersButton.addEventListener("click", applyGlobalFilters);
     dom.resetGlobalFiltersButton.addEventListener("click", resetGlobalFilters);
     dom.clearHistoryButton.addEventListener("click", clearHistory);
@@ -142,6 +148,11 @@
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && !dom.saveAnalysisModal.hidden) {
         closeSaveAnalysisModal();
+      }
+    });
+    document.addEventListener("click", function (event) {
+      if (!event.target.closest(".autocomplete-field")) {
+        closeObjectSuggestions();
       }
     });
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -1840,11 +1851,13 @@
     state.globalFilters.deltaMax = dom.globalDeltaMaxFilter.value;
     state.globalFilters.objectQuery = dom.globalObjectSearch.value;
     state.globalFilters.departmentQuery = dom.globalDepartmentSearch.value;
+    closeObjectSuggestions();
     renderAnalysis();
   }
 
   function resetGlobalFilters() {
     resetGlobalFiltersState();
+    closeObjectSuggestions();
     renderAnalysis();
   }
 
@@ -2014,6 +2027,7 @@
     dom.resetGlobalFiltersButton.disabled = !hasComparison || !hasActiveFilters;
 
     if (!hasComparison) {
+      closeObjectSuggestions();
       dom.globalFilterStatus.textContent = "Фильтры появятся после расчета";
       return;
     }
@@ -2026,6 +2040,174 @@
     dom.globalFilterStatus.textContent = view.visibleRows
       ? "Показано " + view.visibleRows + " из " + view.totalRows
       : "Ничего не найдено";
+  }
+
+  function renderObjectSuggestions() {
+    if (!dom.globalObjectSuggestions || !state.comparison || dom.globalObjectSearch.disabled) {
+      closeObjectSuggestions();
+      return;
+    }
+
+    const query = dom.globalObjectSearch.value.trim();
+
+    if (!query) {
+      closeObjectSuggestions();
+      return;
+    }
+
+    const suggestions = getObjectSuggestions(query, 8);
+
+    if (!suggestions.length) {
+      objectSuggestionIndex = -1;
+      dom.globalObjectSuggestions.hidden = false;
+      dom.globalObjectSuggestions.innerHTML = '<div class="autocomplete-empty">Ничего не найдено</div>';
+      dom.globalObjectSearch.setAttribute("aria-expanded", "true");
+      return;
+    }
+
+    objectSuggestionIndex = -1;
+    dom.globalObjectSuggestions.hidden = false;
+    dom.globalObjectSuggestions.innerHTML = suggestions.map(renderObjectSuggestion).join("");
+    dom.globalObjectSearch.setAttribute("aria-expanded", "true");
+  }
+
+  function getObjectSuggestions(query, limit) {
+    const normalizedQuery = normalizeSearch(query);
+    const rows = state.comparison && Array.isArray(state.comparison.rows) ? state.comparison.rows : [];
+    const seen = new Set();
+    const suggestions = [];
+
+    rows.some(function (row) {
+      const label = String(row.label || "").trim();
+      const key = String(row.key || "").trim();
+      const values = Array.from(new Set(getRowSearchValues(row).map(function (value) {
+        return String(value || "").trim();
+      }).filter(Boolean)));
+      const matchedValue = values.find(function (value) {
+        return normalizeSearch(value).includes(normalizedQuery);
+      });
+
+      if (!matchedValue) {
+        return false;
+      }
+
+      const uniqueKey = normalizeSearch(label + "|" + key);
+
+      if (!seen.has(uniqueKey)) {
+        seen.add(uniqueKey);
+        suggestions.push({
+          label: label || key,
+          key: key,
+          hint:
+            matchedValue &&
+            normalizeSearch(matchedValue) !== normalizeSearch(label) &&
+            normalizeSearch(matchedValue) !== normalizeSearch(key)
+              ? matchedValue
+              : key,
+        });
+      }
+
+      return suggestions.length >= limit;
+    });
+
+    return suggestions;
+  }
+
+  function renderObjectSuggestion(suggestion, index) {
+    const keyHint =
+      suggestion.hint && normalizeSearch(suggestion.hint) !== normalizeSearch(suggestion.label)
+        ? '<span class="autocomplete-item__hint">' + App.UI.escapeHtml(suggestion.hint) + "</span>"
+        : "";
+
+    return (
+      '<button class="autocomplete-item" type="button" role="option" data-object-suggestion="' +
+      App.UI.escapeHtml(suggestion.label) +
+      '" data-suggestion-index="' +
+      index +
+      '">' +
+      '<span class="autocomplete-item__label">' +
+      App.UI.escapeHtml(suggestion.label) +
+      "</span>" +
+      keyHint +
+      "</button>"
+    );
+  }
+
+  function handleObjectSuggestionSelect(event) {
+    const option = event.target.closest("[data-object-suggestion]");
+
+    if (!option) {
+      return;
+    }
+
+    event.preventDefault();
+    selectObjectSuggestion(option.dataset.objectSuggestion);
+  }
+
+  function handleObjectSuggestionKeydown(event) {
+    if (dom.globalObjectSuggestions.hidden) {
+      return;
+    }
+
+    const options = Array.from(dom.globalObjectSuggestions.querySelectorAll("[data-object-suggestion]"));
+
+    if (!options.length) {
+      if (event.key === "Escape") {
+        closeObjectSuggestions();
+      }
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveObjectSuggestion(Math.min(objectSuggestionIndex + 1, options.length - 1), options);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveObjectSuggestion(Math.max(objectSuggestionIndex - 1, 0), options);
+      return;
+    }
+
+    if (event.key === "Enter" && objectSuggestionIndex >= 0) {
+      event.preventDefault();
+      selectObjectSuggestion(options[objectSuggestionIndex].dataset.objectSuggestion);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      closeObjectSuggestions();
+    }
+  }
+
+  function setActiveObjectSuggestion(index, options) {
+    objectSuggestionIndex = index;
+
+    options.forEach(function (option, optionIndex) {
+      option.classList.toggle("is-active", optionIndex === objectSuggestionIndex);
+    });
+  }
+
+  function selectObjectSuggestion(value) {
+    dom.globalObjectSearch.value = value || "";
+    closeObjectSuggestions();
+    dom.globalObjectSearch.focus();
+  }
+
+  function closeObjectSuggestions() {
+    objectSuggestionIndex = -1;
+
+    if (!dom.globalObjectSuggestions) {
+      return;
+    }
+
+    dom.globalObjectSuggestions.hidden = true;
+    dom.globalObjectSuggestions.innerHTML = "";
+
+    if (dom.globalObjectSearch) {
+      dom.globalObjectSearch.setAttribute("aria-expanded", "false");
+    }
   }
 
   function getRowSearchValues(row) {

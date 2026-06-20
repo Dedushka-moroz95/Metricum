@@ -154,10 +154,11 @@
                 <input id="globalDeltaMaxFilter" type="text" inputmode="decimal" placeholder="10" disabled />
               </label>
             </div>
-            <label class="field sidebar-field">
+            <div class="field sidebar-field autocomplete-field">
               <span>Сотрудник / объект</span>
-              <input id="globalObjectSearch" type="text" placeholder="Имя, логин, команда" autocomplete="off" disabled />
-            </label>
+              <input id="globalObjectSearch" type="text" placeholder="Имя, логин, команда" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="globalObjectSuggestions" disabled />
+              <div id="globalObjectSuggestions" class="autocomplete-list" role="listbox" hidden></div>
+            </div>
             <label class="field sidebar-field">
               <span>Подразделение</span>
               <input id="globalDepartmentSearch" type="text" placeholder="Любое поле строки" autocomplete="off" disabled />
