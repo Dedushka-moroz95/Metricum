@@ -112,7 +112,12 @@
       options: {
         indexAxis: "y",
         interaction: {
-          mode: "nearest",
+          mode: "barHitbox",
+          axis: "xy",
+          intersect: true,
+        },
+        hover: {
+          mode: "barHitbox",
           axis: "xy",
           intersect: true,
         },
@@ -222,6 +227,8 @@
   }
 
   function ensureTooltipPositioner() {
+    registerBarHitboxMode();
+
     const Tooltip = global.Chart && global.Chart.Tooltip;
 
     if (!Tooltip || !Tooltip.positioners || Tooltip.positioners.cursorWithinBar) {
@@ -235,27 +242,131 @@
 
       const activeElement = elements[0];
       const element = activeElement.element || activeElement;
-      const props = element.getProps ? element.getProps(["x", "y", "base", "height"], true) : element;
-      const chartArea = this.chart ? this.chart.chartArea : null;
-      const pointX = Number.isFinite(props.x) ? props.x : 0;
-      const pointY = Number.isFinite(props.y) ? props.y : 0;
-      const baseX = Number.isFinite(props.base) ? props.base : pointX;
-      const pointer = eventPosition || { x: pointX, y: pointY };
-      const rawLeft = Math.min(pointX, baseX);
-      const rawRight = Math.max(pointX, baseX);
-      const barCenter = (rawLeft + rawRight) / 2;
-      const minSpan = 18;
-      const span = Math.max(rawRight - rawLeft, minSpan);
-      const barLeft = barCenter - span / 2;
-      const barRight = barCenter + span / 2;
-      const safeLeft = chartArea ? Math.max(barLeft, chartArea.left) : barLeft;
-      const safeRight = chartArea ? Math.min(barRight, chartArea.right) : barRight;
-      const halfHeight = Math.max((props.height || 18) / 2, 9);
+      const bounds = getBarHitbox(element, this.chart ? this.chart.chartArea : null, true);
+      const pointer = eventPosition || { x: bounds.left, y: bounds.centerY };
 
       return {
-        x: clamp(pointer.x, safeLeft, safeRight),
-        y: clamp(pointer.y, pointY - halfHeight, pointY + halfHeight),
+        x: clamp(pointer.x, bounds.left, bounds.right),
+        y: bounds.centerY,
       };
+    };
+  }
+
+  function registerBarHitboxMode() {
+    const Interaction = global.Chart && global.Chart.Interaction;
+
+    if (!Interaction || !Interaction.modes || Interaction.modes.barHitbox) {
+      return;
+    }
+
+    Interaction.modes.barHitbox = function (chart, event) {
+      const pointer = getEventPosition(chart, event);
+      const chartArea = chart.chartArea;
+      const activeItems = [];
+      const horizontalPadding = 4;
+      const verticalPadding = 6;
+
+      if (!pointer || !chartArea) {
+        return activeItems;
+      }
+
+      (chart.data.datasets || []).forEach(function (_dataset, datasetIndex) {
+        const meta = chart.getDatasetMeta(datasetIndex);
+
+        if (!meta || meta.hidden || !meta.data) {
+          return;
+        }
+
+        meta.data.forEach(function (element, index) {
+          if (!element || (element.hasValue && !element.hasValue())) {
+            return;
+          }
+
+          const bounds = getBarHitbox(element, chartArea, true);
+          const isInside =
+            pointer.x >= bounds.left - horizontalPadding &&
+            pointer.x <= bounds.right + horizontalPadding &&
+            pointer.y >= bounds.top - verticalPadding &&
+            pointer.y <= bounds.bottom + verticalPadding;
+
+          if (isInside) {
+            activeItems.push({
+              element,
+              datasetIndex,
+              index,
+            });
+          }
+        });
+      });
+
+      return activeItems;
+    };
+  }
+
+  function getEventPosition(chart, event) {
+    const nativeEvent = event && (event.native || event);
+
+    if (chart && chart.canvas && nativeEvent) {
+      const pointer = getNativePointer(nativeEvent);
+
+      if (pointer) {
+        const rect = chart.canvas.getBoundingClientRect();
+        const scaleX = rect.width ? chart.width / rect.width : 1;
+        const scaleY = rect.height ? chart.height / rect.height : 1;
+
+        return {
+          x: (pointer.clientX - rect.left) * scaleX,
+          y: (pointer.clientY - rect.top) * scaleY,
+        };
+      }
+    }
+
+    if (event && Number.isFinite(event.x) && Number.isFinite(event.y)) {
+      return {
+        x: event.x,
+        y: event.y,
+      };
+    }
+
+    return null;
+  }
+
+  function getNativePointer(nativeEvent) {
+    if (Number.isFinite(nativeEvent.clientX) && Number.isFinite(nativeEvent.clientY)) {
+      return nativeEvent;
+    }
+
+    const touch = nativeEvent.touches && nativeEvent.touches[0];
+
+    if (touch && Number.isFinite(touch.clientX) && Number.isFinite(touch.clientY)) {
+      return touch;
+    }
+
+    return null;
+  }
+
+  function getBarHitbox(element, chartArea, useFinalPosition) {
+    const props = element.getProps ? element.getProps(["x", "y", "base", "height"], useFinalPosition) : element;
+    const pointX = Number.isFinite(props.x) ? props.x : 0;
+    const pointY = Number.isFinite(props.y) ? props.y : 0;
+    const baseX = Number.isFinite(props.base) ? props.base : pointX;
+    const rawLeft = Math.min(pointX, baseX);
+    const rawRight = Math.max(pointX, baseX);
+    const barCenter = (rawLeft + rawRight) / 2;
+    const minSpan = 18;
+    const span = Math.max(rawRight - rawLeft, minSpan);
+    const barLeft = barCenter - span / 2;
+    const barRight = barCenter + span / 2;
+    const safeLeft = chartArea ? Math.max(barLeft, chartArea.left) : barLeft;
+    const safeRight = chartArea ? Math.min(barRight, chartArea.right) : barRight;
+    const halfHeight = Math.max((props.height || 18) / 2, 9);
+
+    return {
+      left: safeLeft,
+      right: safeRight,
+      top: pointY - halfHeight,
+      bottom: pointY + halfHeight,
+      centerY: pointY,
     };
   }
 
