@@ -893,6 +893,7 @@
       '">' +
       buildColumnOptions(ensureSingleFileSource().table, getSingleFileMetricColumn(metric), "Выберите показатель") +
       "</select></label>" +
+      renderAggregationSelect(metric) +
       '<button class="icon-button" type="button" data-action="remove-metric" title="Удалить показатель">×</button>' +
       "</div>"
     );
@@ -917,8 +918,38 @@
         })
         .join("") +
       "</div>" +
+      renderAggregationSelect(metric) +
       '<button class="icon-button" type="button" data-action="remove-metric" title="Удалить показатель">×</button>' +
       "</div>"
+    );
+  }
+
+  function renderAggregationSelect(metric) {
+    const value = metric.aggregation || "auto";
+
+    return (
+      '<label class="field metric-aggregation"><span>Агрегация дублей</span><select name="metricAggregation" data-metric-id="' +
+      metric.id +
+      '">' +
+      '<option value="auto" ' +
+      selected(value, "auto") +
+      ">Авто</option>" +
+      '<option value="sum" ' +
+      selected(value, "sum") +
+      ">Сумма</option>" +
+      '<option value="avg" ' +
+      selected(value, "avg") +
+      ">Среднее</option>" +
+      '<option value="min" ' +
+      selected(value, "min") +
+      ">Минимум</option>" +
+      '<option value="max" ' +
+      selected(value, "max") +
+      ">Максимум</option>" +
+      '<option value="first" ' +
+      selected(value, "first") +
+      ">Первое</option>" +
+      "</select></label>"
     );
   }
 
@@ -1003,6 +1034,21 @@
   }
 
   function handleMetricInput(event) {
+    if (event.target.name === "metricAggregation") {
+      const metric = findMetric(event.target.dataset.metricId);
+
+      if (!metric) {
+        return;
+      }
+
+      metric.aggregation = event.target.value || "auto";
+      clearAnalysis();
+      renderMetrics();
+      renderAnalysis();
+      renderWarningsPanel();
+      return;
+    }
+
     if (event.target.name === "singleMetricColumn") {
       const row = event.target.closest("[data-metric-id]");
       const metric = row ? findMetric(row.dataset.metricId) : null;
@@ -2346,7 +2392,12 @@
       if (item.items.length) {
         warnings.push({
           type: "warn",
-          message: "В периоде «" + item.periodLabel + "» есть дубли объектов сравнения: " + item.items.length,
+          message:
+            "В периоде «" +
+            item.periodLabel +
+            "» есть дубли объектов сравнения: " +
+            item.items.length +
+            ". Показатели по дублям считаются по выбранной агрегации.",
         });
       }
     });

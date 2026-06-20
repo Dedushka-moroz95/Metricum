@@ -157,7 +157,7 @@
 
   function buildIndex(table, idColumn) {
     const records = new Map();
-    const duplicates = [];
+    const duplicateGroups = new Map();
     const emptyIds = [];
 
     table.rows.forEach(function (row) {
@@ -174,11 +174,20 @@
 
       if (records.has(key)) {
         const existing = records.get(key);
-        duplicates.push({
-          key: key,
-          label: firstPresentText(displayValue, existing.displayValue, key),
-          rowNumbers: [existing.row.rowNumber, row.rowNumber],
-        });
+        let duplicateGroup = duplicateGroups.get(key);
+
+        if (!duplicateGroup) {
+          duplicateGroup = {
+            key: key,
+            label: firstPresentText(displayValue, existing.displayValue, key),
+            rowNumbers: [existing.row.rowNumber],
+          };
+          duplicateGroups.set(key, duplicateGroup);
+        }
+
+        existing.rows.push(row);
+        duplicateGroup.label = firstPresentText(displayValue, duplicateGroup.label, existing.displayValue, key);
+        duplicateGroup.rowNumbers.push(row.rowNumber);
         return;
       }
 
@@ -186,12 +195,17 @@
         key: key,
         displayValue: displayValue,
         row: row,
+        rows: [row],
       });
     });
 
     return {
       records: records,
-      duplicates: duplicates,
+      duplicates: Array.from(duplicateGroups.values()).map(function (group) {
+        return Object.assign({}, group, {
+          count: group.rowNumbers.length,
+        });
+      }),
       emptyIds: emptyIds,
     };
   }
@@ -214,28 +228,26 @@
         };
       }
 
-      const raw = record.row.values[columnId];
-      const number = Normalizers.normalizeNumber(raw);
-      const normalizedValue = number.isNumeric ? number.value * profile.scale : number.value;
-
-      if (!number.isNumeric) {
-        invalidValues.push({
-          key: key,
-          label: label,
-          periodId: period.id,
-          periodLabel: period.label,
-          metric: metric.label,
-          value: raw,
-        });
-      }
+      const aggregatedValue = aggregateMetricRows({
+        rows: record.rows || [record.row],
+        columnId: columnId,
+        metric: metric,
+        period: period,
+        key: key,
+        label: label,
+        profile: profile,
+        invalidValues: invalidValues,
+      });
 
       return {
         periodId: period.id,
         periodLabel: period.label,
-        value: normalizedValue,
-        raw: raw,
+        value: aggregatedValue.value,
+        raw: aggregatedValue.raw,
         isMissing: false,
-        isNumeric: number.isNumeric,
+        isNumeric: aggregatedValue.isNumeric,
+        aggregation: aggregatedValue.aggregation,
+        sourceCount: aggregatedValue.sourceCount,
         valueFormat: profile.valueFormat,
       };
     });
@@ -256,6 +268,133 @@
       deltaPercent: primaryComparison ? primaryComparison.deltaPercent : null,
       impact: primaryComparison ? primaryComparison.impact : "unknown",
     };
+  }
+
+  function aggregateMetricRows(options) {
+    const rows = options.rows || [];
+    const profile = options.profile;
+    const method = resolveAggregation(options.metric.aggregation, profile.valueFormat);
+
+    if (method === "first") {
+      return aggregateFirstMetricValue(options);
+    }
+
+    const numericItems = [];
+    let firstRaw = "";
+    let hasFirstRaw = false;
+
+    rows.forEach(function (row) {
+      const raw = row.values[options.columnId];
+      const number = Normalizers.normalizeNumber(raw);
+
+      if (!hasFirstRaw && !Normalizers.isEmptyValue(raw)) {
+        firstRaw = raw;
+        hasFirstRaw = true;
+      }
+
+      if (number.isNumeric) {
+        numericItems.push({
+          value: number.value * profile.scale,
+          raw: raw,
+        });
+        return;
+      }
+
+      if (!number.isEmpty) {
+        pushInvalidMetricValue(options, raw);
+      }
+    });
+
+    if (!numericItems.length) {
+      return {
+        value: null,
+        raw: firstRaw,
+        isNumeric: false,
+        aggregation: method,
+        sourceCount: rows.length,
+      };
+    }
+
+    const values = numericItems.map(function (item) {
+      return item.value;
+    });
+    const value = aggregateNumbers(values, method);
+
+    return {
+      value: value,
+      raw: method === "first" ? numericItems[0].raw : Normalizers.formatMetricValue(value, profile.valueFormat, 2),
+      isNumeric: Number.isFinite(value),
+      aggregation: method,
+      sourceCount: rows.length,
+    };
+  }
+
+  function aggregateFirstMetricValue(options) {
+    const row = options.rows[0];
+
+    if (!row) {
+      return {
+        value: null,
+        raw: "",
+        isNumeric: false,
+        aggregation: "first",
+        sourceCount: 0,
+      };
+    }
+
+    const raw = row.values[options.columnId];
+    const number = Normalizers.normalizeNumber(raw);
+
+    if (!number.isNumeric && !number.isEmpty) {
+      pushInvalidMetricValue(options, raw);
+    }
+
+    return {
+      value: number.isNumeric ? number.value * options.profile.scale : number.value,
+      raw: raw,
+      isNumeric: number.isNumeric,
+      aggregation: "first",
+      sourceCount: options.rows.length,
+    };
+  }
+
+  function resolveAggregation(aggregation, valueFormat) {
+    if (aggregation === "sum" || aggregation === "avg" || aggregation === "min" || aggregation === "max" || aggregation === "first") {
+      return aggregation;
+    }
+
+    return valueFormat === "percent" ? "avg" : "sum";
+  }
+
+  function aggregateNumbers(values, method) {
+    if (method === "avg") {
+      return values.reduce(sumValues, 0) / values.length;
+    }
+
+    if (method === "min") {
+      return Math.min.apply(null, values);
+    }
+
+    if (method === "max") {
+      return Math.max.apply(null, values);
+    }
+
+    return values.reduce(sumValues, 0);
+  }
+
+  function sumValues(sum, value) {
+    return sum + value;
+  }
+
+  function pushInvalidMetricValue(options, raw) {
+    options.invalidValues.push({
+      key: options.key,
+      label: options.label,
+      periodId: options.period.id,
+      periodLabel: options.period.label,
+      metric: options.metric.label,
+      value: raw,
+    });
   }
 
   function buildMetricComparisons(periodValues, comparisonMode, valueFormat, comparisonPairs) {

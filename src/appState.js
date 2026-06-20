@@ -57,6 +57,7 @@
     return {
       id: "metric_" + Date.now() + "_" + number,
       label: "",
+      aggregation: "auto",
       columns: columns || {},
     };
   }

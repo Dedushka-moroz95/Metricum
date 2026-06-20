@@ -379,11 +379,11 @@
   }
 
   function fillDuplicateSheet(sheet, comparison) {
-    sheet.addRow(["Период", "Объект", "Строки"]);
+    sheet.addRow(["Период", "Объект", "Количество строк", "Строки"]);
 
     comparison.duplicatesByPeriod.forEach(function (group) {
       group.items.forEach(function (item) {
-        sheet.addRow([group.periodLabel, item.label, item.rowNumbers.join(", ")]);
+        sheet.addRow([group.periodLabel, item.label, item.count || item.rowNumbers.length, item.rowNumbers.join(", ")]);
       });
     });
 
