@@ -1,0 +1,12 @@
+Month,Name,Team,Sales,Quality %,Errors,AHT
+January,Anna Kuznetsova,Support,100,90%,2,310
+January,Boris Petrov,Support,80,85%,3,330
+January,Elena Smirnova,Sales,120,92%,1,280
+February,Anna Kuznetsova,Support,115,94%,1,300
+February,Boris Petrov,Support,70,82%,5,350
+February,Elena Smirnova,Sales,130,95%,1,270
+February,Maria Ivanova,Support,60,88%,2,340
+March,Anna Kuznetsova,Support,125,92%,2,295
+March,Boris Petrov,Support,90,86%,4,340
+March,Elena Smirnova,Sales,118,93%,2,285
+March,Maria Ivanova,Support,75,91%,1,320
