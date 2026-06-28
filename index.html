@@ -177,17 +177,21 @@
             </button>
           </section>
 
-          <section class="sidebar-control-card" aria-label="Действия с отчетом">
+          <section class="sidebar-control-card sidebar-report-card" aria-label="Действия с отчетом">
             <span class="sidebar-panel__label">Отчет</span>
-            <div class="results-actions sidebar-actions">
+            <div class="results-actions sidebar-actions sidebar-report-actions">
               <button id="exportCsvButton" class="button button-secondary" type="button" disabled>
                 CSV
               </button>
               <button id="exportExcelButton" class="button button-secondary" type="button" disabled>
                 Excel
               </button>
-              <button id="saveAnalysisButton" class="button button-secondary" type="button" disabled>
-                Сохранить анализ
+              <button id="saveAnalysisButton" class="button button-secondary button-icon-only" type="button" aria-label="Сохранить анализ" title="Сохранить анализ" disabled>
+                <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M5 3h12l2 2v16H5V3Z"></path>
+                  <path d="M8 3v6h8V3"></path>
+                  <path d="M8 15h8v6H8v-6Z"></path>
+                </svg>
               </button>
             </div>
           </section>
