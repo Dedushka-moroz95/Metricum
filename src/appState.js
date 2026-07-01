@@ -16,6 +16,7 @@
       selectedChartMetricId: "",
       selectedChartType: "bar-horizontal",
       globalFilters: createGlobalFilters(),
+      processing: createProcessingState(),
       messages: [],
     };
   }
@@ -39,6 +40,14 @@
       virtualPeriods: [],
       warnings: [],
       loading: false,
+    };
+  }
+
+  function createProcessingState() {
+    return {
+      active: false,
+      title: "",
+      detail: "",
     };
   }
 
@@ -67,6 +76,7 @@
   App.createInitialState = createInitialState;
   App.createSingleFileSource = createSingleFileSource;
   App.createGlobalFilters = createGlobalFilters;
+  App.createProcessingState = createProcessingState;
   App.createPeriod = createPeriod;
   App.createMetric = createMetric;
 })(window);

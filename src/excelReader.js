@@ -22,12 +22,14 @@
     });
   }
 
-  async function readExcelFile(file) {
+  async function readExcelFile(file, options) {
     if (!global.XLSX) {
       throw new Error("Библиотека SheetJS не загружена");
     }
 
+    await notifyProgress(options, "Чтение файла", file.name);
     const buffer = await readFileAsArrayBuffer(file);
+    await notifyProgress(options, "Анализ структуры", file.name);
     const workbook = global.XLSX.read(buffer, {
       type: "array",
       cellDates: true,
@@ -39,6 +41,7 @@
 
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
+    await notifyProgress(options, "Проверка таблицы", sheetName);
     const matrix = global.XLSX.utils.sheet_to_json(sheet, {
       header: 1,
       raw: false,
@@ -237,6 +240,31 @@
 
   function formatCount(value) {
     return Normalizers.formatNumber(Number(value) || 0, 0);
+  }
+
+  async function notifyProgress(options, title, detail) {
+    if (options && typeof options.onProgress === "function") {
+      await options.onProgress({
+        title: title,
+        detail: detail,
+      });
+      return;
+    }
+
+    await yieldToBrowser();
+  }
+
+  function yieldToBrowser() {
+    return new Promise(function (resolve) {
+      if (typeof global.requestAnimationFrame === "function") {
+        global.requestAnimationFrame(function () {
+          resolve();
+        });
+        return;
+      }
+
+      global.setTimeout(resolve, 0);
+    });
   }
 
   App.ExcelReader = {

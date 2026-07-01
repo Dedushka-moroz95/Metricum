@@ -37,6 +37,7 @@
     dom.exportCsvButton = document.getElementById("exportCsvButton");
     dom.exportExcelButton = document.getElementById("exportExcelButton");
     dom.saveAnalysisButton = document.getElementById("saveAnalysisButton");
+    dom.processingStatus = document.getElementById("processingStatus");
     dom.warningsPanel = document.getElementById("warningsPanel");
     dom.globalImpactFilter = document.getElementById("globalImpactFilter");
     dom.globalDeltaMinFilter = document.getElementById("globalDeltaMinFilter");
@@ -474,11 +475,14 @@
     }
 
     period.loading = true;
+    setProcessingStatus("Чтение файла", file.name);
     renderPeriodUploads();
 
     try {
       state.messages = [];
-      const table = await App.ExcelReader.readExcelFile(file);
+      const table = await App.ExcelReader.readExcelFile(file, {
+        onProgress: updateProcessingStatus,
+      });
       period.file = file;
       period.table = table;
       period.idColumn = "";
@@ -501,6 +505,8 @@
       });
       clearAnalysis();
       renderAll();
+    } finally {
+      clearProcessingStatus();
     }
   }
 
@@ -512,11 +518,14 @@
     }
 
     singleFile.loading = true;
+    setProcessingStatus("Чтение файла", file.name);
     renderPeriodUploads();
 
     try {
       state.messages = [];
-      const table = await App.ExcelReader.readExcelFile(file);
+      const table = await App.ExcelReader.readExcelFile(file, {
+        onProgress: updateProcessingStatus,
+      });
       singleFile.file = file;
       singleFile.table = table;
       singleFile.periodColumn = "";
@@ -540,6 +549,8 @@
       });
       clearAnalysis();
       renderAll();
+    } finally {
+      clearProcessingStatus();
     }
   }
 
@@ -562,6 +573,7 @@
     renderPreviews();
     renderColumnMapping();
     renderMetrics();
+    renderProcessingStatus();
     renderAnalysis();
     renderHistoryPanel();
     renderWarningsPanel();
@@ -847,7 +859,7 @@
 
     dom.metricList.className = "metric-list";
     dom.metricList.innerHTML = state.mapping.metrics.map(renderMetricRow).join("");
-    dom.analyzeButton.disabled = !isReadyToAnalyze();
+    dom.analyzeButton.disabled = isProcessingActive() || !isReadyToAnalyze();
   }
 
   function renderSingleFileMetrics() {
@@ -871,7 +883,7 @@
 
     dom.metricList.className = "metric-list";
     dom.metricList.innerHTML = state.mapping.metrics.map(renderSingleFileMetricRow).join("");
-    dom.analyzeButton.disabled = !isReadyToAnalyze();
+    dom.analyzeButton.disabled = isProcessingActive() || !isReadyToAnalyze();
   }
 
   function getSingleFileMetricSetupMessage() {
@@ -1320,7 +1332,11 @@
     return getValidManualComparisonPairs(periods).length > 0;
   }
 
-  function analyze() {
+  async function analyze() {
+    if (isProcessingActive()) {
+      return;
+    }
+
     state.messages = [];
     syncMetricLabels();
 
@@ -1341,20 +1357,36 @@
     const comparisonPeriods = getComparisonPeriods();
     const comparisonMetrics = getComparisonMetrics(comparisonPeriods);
 
-    state.comparison = App.Comparator.comparePeriods({
-      periods: comparisonPeriods,
-      metrics: comparisonMetrics,
-      comparisonMode: state.comparisonMode,
-      comparisonPairs: getManualComparisonPairsForComparator(comparisonPeriods),
-    });
+    try {
+      setProcessingStatus("Расчет сравнения", "Сопоставляем объекты и показатели");
+      await waitForPaint();
 
-    state.analytics = App.Analytics.buildAnalytics(state.comparison, state.mapping.metrics);
-    state.selectedChartMetricId = state.mapping.metrics[0].id;
-    state.selectedChartType = state.selectedChartType || "bar-horizontal";
-    state.restoredHistoryMeta = null;
-    state.restoredHistorySettings = null;
-    hasUnsavedAnalysis = true;
-    renderAll();
+      state.comparison = App.Comparator.comparePeriods({
+        periods: comparisonPeriods,
+        metrics: comparisonMetrics,
+        comparisonMode: state.comparisonMode,
+        comparisonPairs: getManualComparisonPairsForComparator(comparisonPeriods),
+      });
+
+      setProcessingStatus("Построение dashboard", "Готовим графики, KPI и таблицу");
+      await waitForPaint();
+
+      state.analytics = App.Analytics.buildAnalytics(state.comparison, state.mapping.metrics);
+      state.selectedChartMetricId = state.mapping.metrics[0].id;
+      state.selectedChartType = state.selectedChartType || "bar-horizontal";
+      state.restoredHistoryMeta = null;
+      state.restoredHistorySettings = null;
+      hasUnsavedAnalysis = true;
+      renderAll();
+    } catch (error) {
+      state.messages.push({
+        type: "error",
+        message: "Не удалось рассчитать сравнение: " + error.message,
+      });
+      renderAll();
+    } finally {
+      clearProcessingStatus();
+    }
   }
 
   function renderAnalysis() {
@@ -1371,9 +1403,10 @@
     renderChart(view.comparison);
 
     const hasComparison = Boolean(state.comparison);
-    dom.exportCsvButton.disabled = !hasComparison;
-    dom.exportExcelButton.disabled = !hasComparison;
-    dom.saveAnalysisButton.disabled = !hasComparison;
+    const processingActive = isProcessingActive();
+    dom.exportCsvButton.disabled = processingActive || !hasComparison;
+    dom.exportExcelButton.disabled = processingActive || !hasComparison;
+    dom.saveAnalysisButton.disabled = processingActive || !hasComparison;
     refreshMotion();
   }
 
@@ -1796,6 +1829,94 @@
     App.UI.renderWarnings(dom.warningsPanel, collectWarnings());
   }
 
+  function setProcessingStatus(title, detail) {
+    state.processing = {
+      active: true,
+      title: title || "Обработка",
+      detail: detail || "",
+    };
+    renderProcessingStatus();
+    syncProcessingButtons();
+  }
+
+  function clearProcessingStatus() {
+    state.processing = App.createProcessingState ? App.createProcessingState() : {
+      active: false,
+      title: "",
+      detail: "",
+    };
+    renderProcessingStatus();
+    syncProcessingButtons();
+  }
+
+  function renderProcessingStatus() {
+    if (!dom.processingStatus) {
+      return;
+    }
+
+    const processing = state.processing || {};
+    const isActive = Boolean(processing.active);
+
+    dom.processingStatus.hidden = !isActive;
+
+    if (!isActive) {
+      dom.processingStatus.innerHTML = "";
+      return;
+    }
+
+    dom.processingStatus.innerHTML =
+      '<span class="processing-spinner" aria-hidden="true"></span>' +
+      "<span>" +
+      "<strong>" +
+      App.UI.escapeHtml(processing.title || "Обработка") +
+      "</strong>" +
+      "<small>" +
+      App.UI.escapeHtml(processing.detail || "Подождите немного") +
+      "</small>" +
+      "</span>";
+  }
+
+  function syncProcessingButtons() {
+    if (!dom.analyzeButton || !dom.exportCsvButton || !dom.exportExcelButton || !dom.saveAnalysisButton) {
+      return;
+    }
+
+    if (isProcessingActive()) {
+      dom.analyzeButton.disabled = true;
+      dom.exportCsvButton.disabled = true;
+      dom.exportExcelButton.disabled = true;
+      dom.saveAnalysisButton.disabled = true;
+      return;
+    }
+
+    dom.analyzeButton.disabled = !isReadyToAnalyze();
+    dom.exportCsvButton.disabled = !state.comparison;
+    dom.exportExcelButton.disabled = !state.comparison;
+    dom.saveAnalysisButton.disabled = !state.comparison;
+  }
+
+  async function updateProcessingStatus(status) {
+    setProcessingStatus(status.title, status.detail);
+    await waitForPaint();
+  }
+
+  function waitForPaint() {
+    return new Promise(function (resolve) {
+      if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(function () {
+          resolve();
+        });
+        return;
+      }
+
+      window.setTimeout(resolve, 0);
+    });
+  }
+
+  function isProcessingActive() {
+    return Boolean(state.processing && state.processing.active);
+  }
+
   function isSingleFileSourceMode() {
     return state.periodSourceMode === "singleFile";
   }
@@ -2216,20 +2337,34 @@
     }
   }
 
-  function exportCsv() {
-    if (!state.comparison) {
-      return;
-    }
-
-    App.Exporters.exportCsv(state.comparison, state.mapping.metrics);
-  }
-
-  async function exportExcel() {
-    if (!state.comparison) {
+  async function exportCsv() {
+    if (!state.comparison || isProcessingActive()) {
       return;
     }
 
     try {
+      setProcessingStatus("Подготовка CSV", "Собираем таблицу результатов");
+      await waitForPaint();
+      App.Exporters.exportCsv(state.comparison, state.mapping.metrics);
+    } catch (error) {
+      state.messages.push({
+        type: "error",
+        message: "Не удалось сформировать CSV: " + error.message,
+      });
+      renderAll();
+    } finally {
+      clearProcessingStatus();
+    }
+  }
+
+  async function exportExcel() {
+    if (!state.comparison || isProcessingActive()) {
+      return;
+    }
+
+    try {
+      setProcessingStatus("Подготовка Excel", "Формируем листы отчета и графики");
+      await waitForPaint();
       await App.Exporters.exportExcel(state.comparison, state.mapping.metrics, state.analytics, {
         chartMetric: findMetric(state.selectedChartMetricId) || state.mapping.metrics[0],
         chartType: state.selectedChartType || "bar-horizontal",
@@ -2240,6 +2375,8 @@
         message: "Не удалось сформировать Excel: " + error.message,
       });
       renderAll();
+    } finally {
+      clearProcessingStatus();
     }
   }
 

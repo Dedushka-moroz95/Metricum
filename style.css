@@ -2303,6 +2303,67 @@ input:disabled {
   box-shadow: 0 10px 24px rgba(24, 33, 47, 0.05);
 }
 
+.processing-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(20, 184, 166, 0.24);
+  border-radius: 14px;
+  background: rgba(204, 251, 241, 0.5);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.processing-status[hidden] {
+  display: none;
+}
+
+.processing-status > span:not(.processing-spinner) {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.processing-status strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.processing-status small {
+  overflow: hidden;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.processing-spinner {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(20, 184, 166, 0.22);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: processing-spin 700ms linear infinite;
+}
+
+@keyframes processing-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .data-quality-inline.ok {
   border-color: #bbf7d0;
   background: #f0fdf4;
@@ -3138,6 +3199,17 @@ html.theme-dark .status-pill.warn {
   border-color: rgba(251, 191, 36, 0.24);
   background: rgba(251, 191, 36, 0.12);
   color: #fcd34d;
+}
+
+html.theme-dark .processing-status {
+  border-color: rgba(20, 184, 166, 0.28);
+  background: rgba(20, 184, 166, 0.12);
+  color: var(--text-secondary);
+}
+
+html.theme-dark .processing-spinner {
+  border-color: rgba(45, 212, 191, 0.2);
+  border-top-color: var(--primary-bright);
 }
 
 html.theme-dark .quality-item.neutral,
